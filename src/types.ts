@@ -1,0 +1,129 @@
+/**
+ * Defines a user context for evaluation.
+ * `device_id` and `user_id` are used for identity resolution.
+ * All other predefined fields and user properties are used for
+ * rule based user targeting.
+ */
+ export type ExperimentUser = {
+  /**
+   * Device ID for associating with an identity in Amplitude
+   */
+  device_id?: string;
+
+  /**
+   * User ID for associating with an identity in Amplitude
+   */
+  user_id?: string;
+
+  /**
+   * Predefined field, can be manually provided
+   */
+  country?: string;
+
+  /**
+   * Predefined field, can be manually provided
+   */
+  city?: string;
+
+  /**
+   * Predefined field, can be manually provided
+   */
+  region?: string;
+
+  /**
+   * Predefined field, can be manually provided
+   */
+  dma?: string;
+
+  /**
+   * Predefined field, auto populated via a ExperimentUserProvider
+   * or can be manually provided
+   */
+  language?: string;
+
+  /**
+   * Predefined field, auto populated via a ExperimentUserProvider
+   * or can be manually provided
+   */
+  platform?: string;
+
+  /**
+   * Predefined field, auto populated via a ExperimentUserProvider
+   * or can be manually provided
+   */
+  version?: string;
+
+  /**
+   * Predefined field, auto populated via a ExperimentUserProvider
+   * or can be manually provided
+   */
+  os?: string;
+
+  /**
+   * Predefined field, auto populated via a ExperimentUserProvider
+   * or can be manually provided
+   */
+  device_model?: string;
+
+  /**
+   * Predefined field, can be manually provided
+   */
+  carrier?: string;
+
+  /**
+   * Predefined field, auto populated, can be manually overridden
+   */
+  library?: string;
+
+  /**
+   * Custom user properties
+   */
+  user_properties?: {
+    [propertyName: string]:
+      | string
+      | number
+      | boolean
+      | Array<string | number | boolean>;
+  };
+};
+
+export type Variant = {
+  /**
+   * The value of the variant.
+   */
+  value: string;
+
+  /**
+   * The attached payload, if any.
+   */
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  payload?: any;
+};
+
+export type Variants = {
+  [key: string]: Variant;
+};
+
+export enum Source {
+  LOCAL_STORAGE = 'LOCAL_STORAGE',
+  INITIAL_VARIANTS = 'INITIAL_VARIANTS',
+}
+
+export type ExperimentConfig = {
+  debug?: boolean;
+  fallbackVariant?: Variant;
+  initialVariants?: Variants;
+  serverUrl?: string;
+  source: Source;
+  fetchTimeoutMillis?: number;
+};
+
+export interface ExperimentReactNativeClientModule {
+  initialize(apiKey: string, config?: ExperimentConfig): Promise<boolean>;
+  fetch(user?: ExperimentUser): Promise<boolean>;
+  setUser(user: ExperimentUser): Promise<boolean>;
+  variant(key: string): Promise<Variant>;
+  variantWithFallback(flagKey: string, fallback: Variant): Promise<Variant>;
+  all(): Promise<Variants>;
+  setAmplitudeUserProvider(amplitudeInstanceName?: string): Promise<boolean>;
+}
