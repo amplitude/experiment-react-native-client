@@ -37,9 +37,9 @@ class ExperimentReactNativeClient: NSObject {
         }
         if let val = config?["source"] as! String? {
             var source: Source? = nil
-            if (val == "localStorage") {
+            if (val == "LOCAL_STORAGE") {
                 source = Source.LocalStorage
-            } else if (val == "initialVariants") {
+            } else if (val == "INITIAL_VARIANTS") {
                 source = Source.InitialVariants
             }
 
