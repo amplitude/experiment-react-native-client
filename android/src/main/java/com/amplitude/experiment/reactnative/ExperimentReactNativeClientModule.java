@@ -187,7 +187,7 @@ public class ExperimentReactNativeClientModule extends ReactContextBaseJavaModul
             builder.source(Source.valueOf(source));
         }
         if (config.hasKey("serverUrl")) {
-          builder.serverUrl(config.getString("serverUrl"));
+            builder.serverUrl(config.getString("serverUrl"));
         }
         if (config.hasKey("fetchTimeoutMillis")) {
             builder.fetchTimeoutMillis(config.getInt("fetchTimeoutMillis"));
