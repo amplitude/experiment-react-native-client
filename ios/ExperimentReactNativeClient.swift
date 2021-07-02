@@ -125,6 +125,9 @@ class ExperimentReactNativeClient: NSObject {
         if let val = user["carrier"] as! String? {
             let _ = builder.carrier(val)
         }
+        if let val = user["library"] as! String? {
+            let _ = builder.library(val)
+        }
         if let val = user["user_properties"] as! [String: String]? {
             let _ = builder.userProperties(val)
         }
