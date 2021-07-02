@@ -127,7 +127,7 @@ export enum Source {
    * first, then `initialVariants` if local storage is empty. This option
    * effectively falls back to an assignment fetched previously.
    */
-  LocalStorage = 'localStorage',
+  LocalStorage = 'LOCAL_STORAGE',
 
   /**
    * This bootstrap option is used primarily for servers-side rendering using an
@@ -135,7 +135,7 @@ export enum Source {
    * `initialVariants` over data in local storage, even if variants are fetched
    * successfully and stored locally.
    */
-  InitialVariants = 'initialVariants',
+  InitialVariants = 'INITIAL_VARIANTS',
 }
 
 /**
