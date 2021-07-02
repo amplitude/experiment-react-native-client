@@ -33,6 +33,7 @@ import java.util.concurrent.Future;
 
 @ReactModule(name = ExperimentReactNativeClientModule.NAME)
 public class ExperimentReactNativeClientModule extends ReactContextBaseJavaModule {
+
     public static final String NAME = "ExperimentReactNativeClient";
     private static final String TAG = "Experiment";
     private ReactApplicationContext reactContext;
@@ -50,17 +51,17 @@ public class ExperimentReactNativeClientModule extends ReactContextBaseJavaModul
         return NAME;
     }
 
-
     // Example method
     // See https://reactnative.dev/docs/native-modules-android
     @ReactMethod
     public void initialize(String apiKey, ReadableMap config, Promise promise) {
         try {
             ExperimentConfig convertedConfig = convertConfig(config);
-            experimentClient =
-                    Experiment.initialize((Application) this.reactContext.getApplicationContext()
-                            , apiKey,
-                            convertedConfig);
+            experimentClient = Experiment.initialize(
+                (Application) this.reactContext.getApplicationContext(),
+                apiKey,
+                convertedConfig
+            );
             promise.resolve(true);
         } catch (Exception e) {
             Log.e(TAG, e.getMessage(), e);
@@ -157,7 +158,6 @@ public class ExperimentReactNativeClientModule extends ReactContextBaseJavaModul
 
     // Conversion methods
     private ExperimentConfig convertConfig(ReadableMap config) {
-        Variant fallbackVariant = null;
         ExperimentConfig.Builder builder = ExperimentConfig.builder();
         if (config == null) {
             return builder.build();
@@ -167,8 +167,11 @@ public class ExperimentReactNativeClientModule extends ReactContextBaseJavaModul
         }
         if (config.hasKey("fallbackVariant")) {
             ReadableMap map = config.getMap("fallbackVariant");
-            fallbackVariant = new Variant(safeGetString(map, "value"), safeGetObject(map,
-                    "payload"));
+            Variant fallbackVariant = new Variant(
+                safeGetString(map, "value"),
+                safeGetObject(map, "payload")
+            );
+            builder.fallbackVariant(fallbackVariant);
         }
         if (config.hasKey("initialVariants")) {
             ReadableMap map = config.getMap("initialVariants");
@@ -188,6 +191,9 @@ public class ExperimentReactNativeClientModule extends ReactContextBaseJavaModul
         }
         if (config.hasKey("fetchTimeoutMillis")) {
             builder.fetchTimeoutMillis(config.getInt("fetchTimeoutMillis"));
+        }
+        if (config.hasKey("retryFetchOnFailure")) {
+            builder.retryFetchOnFailure(config.getBoolean("retryFetchOnFailure"));
         }
         return builder.build();
     }

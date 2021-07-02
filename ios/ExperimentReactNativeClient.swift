@@ -13,10 +13,12 @@ class ExperimentReactNativeClient: NSObject {
     }
 
     @objc
-    func initialize(_ apiKey: String,
-                    config: [String:Any]?,
-                    resolver resolve: RCTPromiseResolveBlock,
-                    rejecter reject: RCTPromiseRejectBlock) -> Void {
+    func initialize(
+        _ apiKey: String,
+        config: [String:Any]?,
+        resolver resolve: RCTPromiseResolveBlock,
+        rejecter reject: RCTPromiseRejectBlock
+    ) -> Void {
         let builder = ExperimentConfig.Builder()
         if let val = config?["debug"] as! Bool? {
             let _ = builder.debug(val)
@@ -45,19 +47,24 @@ class ExperimentReactNativeClient: NSObject {
                 let _ = builder.source(source)
             }
         }
-//        if let val = config?["fetchTimeoutMillis"] as! Int? {
-//            builder.fetchTimeoutMillis(val)
-//        }
+        if let val = config?["fetchTimeoutMillis"] as! Int? {
+           let _ = builder.fetchTimeoutMillis(val)
+        }
+        if let val = config?["retryFetchOnFailure"] as! Bool? {
+           let _ = builder.fetchRetryOnFailure(val)
+        }
         experimentClient = Experiment.initialize(apiKey: apiKey, config: builder.build())
         resolve(true)
     }
 
     @objc
-    func fetch(_ user: [String: Any],
-                 resolver resolve: @escaping RCTPromiseResolveBlock,
-                 rejecter reject: @escaping RCTPromiseRejectBlock) -> Void {
+    func fetch(
+        _ user: [String: Any],
+        resolver resolve: @escaping RCTPromiseResolveBlock,
+        rejecter reject: @escaping RCTPromiseRejectBlock
+    ) -> Void {
         let u: ExperimentUser = convertUser(user)
-        experimentClient?.fetch(user: u, completion:{_,error in
+        experimentClient?.fetch(user: u, completion:{ _, error in
             if (error != nil) {
                 reject("Error in fetch", error.debugDescription, error)
             } else {
@@ -67,16 +74,18 @@ class ExperimentReactNativeClient: NSObject {
     }
 
     @objc
-    func setUser(_ user: [String: Any],
-                 resolver resolve: @escaping RCTPromiseResolveBlock,
-                 rejecter reject: @escaping RCTPromiseRejectBlock) -> Void {
+    func setUser(
+        _ user: [String: Any],
+        resolver resolve: @escaping RCTPromiseResolveBlock,
+        rejecter reject: @escaping RCTPromiseRejectBlock
+    ) -> Void {
         let u: ExperimentUser = convertUser(user)
         experimentClient?.setUser(u)
         resolve(true)
     }
 
     func convertUser(_ user: [String: Any]) -> ExperimentUser {
-        let builder = DefaultUserProvider().getUser().copyToBuilder()
+        let builder = ExperimentUser.Builder()
         if let val = user["device_id"] as! String? {
             let _ = builder.deviceId(val)
         }
@@ -116,6 +125,9 @@ class ExperimentReactNativeClient: NSObject {
         if let val = user["carrier"] as! String? {
             let _ = builder.carrier(val)
         }
+        if let val = user["library"] as! String? {
+            let _ = builder.library(val)
+        }
         if let val = user["user_properties"] as! [String: String]? {
             let _ = builder.userProperties(val)
         }
@@ -123,11 +135,12 @@ class ExperimentReactNativeClient: NSObject {
     }
 
     @objc
-    func variant(_ key: String,
-                    resolver resolve: RCTPromiseResolveBlock,
-                    rejecter reject: RCTPromiseRejectBlock) -> Void {
+    func variant(
+        _ key: String,
+        resolver resolve: RCTPromiseResolveBlock,
+        rejecter reject: RCTPromiseRejectBlock
+    ) -> Void {
         let variant = experimentClient?.variant(key, fallback: nil)
-
         var variantMap = [String: Any]()
         variantMap["value"] = variant?.value
         variantMap["payload"] = variant?.payload
@@ -135,14 +148,14 @@ class ExperimentReactNativeClient: NSObject {
     }
 
     @objc
-    func variantWithFallback(_ key: String,
-                    fallback: [String: Any],
-                    resolver resolve: RCTPromiseResolveBlock,
-                    rejecter reject: RCTPromiseRejectBlock) -> Void {
+    func variantWithFallback(
+        _ key: String,
+        fallback: [String: Any],
+        resolver resolve: RCTPromiseResolveBlock,
+        rejecter reject: RCTPromiseRejectBlock
+    ) -> Void {
         let fallbackVariant = Variant.init(fallback["value"] as! String, payload: fallback["payload"])
-
         let variant = experimentClient?.variant(key, fallback: fallbackVariant)
-
         var variantMap = [String: Any]()
         variantMap["value"] = variant?.value
         variantMap["payload"] = variant?.payload
@@ -151,10 +164,11 @@ class ExperimentReactNativeClient: NSObject {
 
 
     @objc
-    func all(_ resolve: RCTPromiseResolveBlock,
-                       rejecter reject: RCTPromiseRejectBlock) -> Void {
+    func all(
+        _ resolve: RCTPromiseResolveBlock,
+        rejecter reject: RCTPromiseRejectBlock
+    ) -> Void {
         let variants = experimentClient?.all()
-
         if let variantsList = variants {
             var map = [String: Any]()
             for (key,value) in variantsList {
@@ -170,9 +184,11 @@ class ExperimentReactNativeClient: NSObject {
     }
 
     @objc
-    func setAmplitudeUserProvider(_ amplitudeInstanceName: String?,
-                              resolver resolve: RCTPromiseResolveBlock,
-                              rejecter reject: RCTPromiseRejectBlock) -> Void {
+    func setAmplitudeUserProvider(
+        _ amplitudeInstanceName: String?,
+        resolver resolve: RCTPromiseResolveBlock,
+        rejecter reject: RCTPromiseRejectBlock
+    ) -> Void {
         let amplitudeInstance = Amplitude.instance()
         let userProvider = AmplitudeUserProvider(amplitudeInstance)
         let _ = experimentClient?.setUserProvider(userProvider)
