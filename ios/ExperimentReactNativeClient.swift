@@ -48,10 +48,10 @@ class ExperimentReactNativeClient: NSObject {
             }
         }
         if let val = config?["fetchTimeoutMillis"] as! Int? {
-           builder.fetchTimeoutMillis(val)
+           let _ = builder.fetchTimeoutMillis(val)
         }
         if let val = config?["retryFetchOnFailure"] as! Bool? {
-           builder.retryFetchOnFailure(val)
+           let _ = builder.fetchRetryOnFailure(val)
         }
         experimentClient = Experiment.initialize(apiKey: apiKey, config: builder.build())
         resolve(true)
