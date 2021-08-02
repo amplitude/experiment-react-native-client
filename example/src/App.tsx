@@ -24,9 +24,11 @@ export default function App() {
   const [allVariants, setAllVariants] = React.useState<Variants | undefined>();
   React.useEffect(() => {
     (async () => {
+      let amplitudeInstanceName;
       if (Amplitude) {
         const amplitude = Amplitude.getInstance();
         amplitude.init('a6dd847b9d2f03c816d4f3f8458cdc1d');
+        amplitudeInstanceName = amplitude.instanceName;
       }
       if (Experiment) {
         await Experiment.initialize('client-IAxMYws9vVQESrrK88aTcToyqMxiiJoR', {
@@ -38,8 +40,9 @@ export default function App() {
               value: 'asdf',
             },
           },
+          amplitudeUserProviderInstanceName: amplitudeInstanceName,
+          amplitudeAnalyticsProviderInstanceName: amplitudeInstanceName,
         });
-        await Experiment.setAmplitudeUserProvider();
         await Experiment.fetch({ user_properties: { test: '1' } });
         setVariant(await Experiment.variant('react-native'));
         setFallbackResult(await Experiment.variant('flag-does-not-exist'));

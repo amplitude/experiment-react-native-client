@@ -6,6 +6,7 @@ import {
   Variants,
   ExperimentReactNativeClientModule,
 } from './types';
+import { version as PACKAGE_VERSION } from '../package.json';
 
 export {
   ExperimentConfig,
@@ -27,6 +28,12 @@ export const Experiment = {
   },
 
   fetch: async (user?: ExperimentUser): Promise<boolean> => {
+    if (!user?.library) {
+      user = {
+        library: `experiment-react-native-client/${PACKAGE_VERSION}`,
+        ...user,
+      };
+    }
     return ExperimentReactNativeClient.fetch(user);
   },
 

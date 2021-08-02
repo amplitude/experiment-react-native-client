@@ -182,6 +182,16 @@ export interface ExperimentConfig {
    * requests fails or times out.
    */
   retryFetchOnFailure?: boolean;
+
+  /**
+   * Name of the amplitude instance to provide user info.
+   */
+  amplitudeUserProviderInstanceName?: string;
+
+  /**
+   * Name of the amplitude instance to provide analytics tracking.
+   */
+  amplitudeAnalyticsProviderInstanceName?: string;
 }
 
 export interface ExperimentReactNativeClientModule {
@@ -191,5 +201,8 @@ export interface ExperimentReactNativeClientModule {
   variant(key: string): Promise<Variant>;
   variantWithFallback(key: string, fallback: Variant): Promise<Variant>;
   all(): Promise<Variants>;
+  /**
+   * @deprecated use config.amplitudeUserProviderInstanceName
+   */
   setAmplitudeUserProvider(amplitudeInstanceName?: string): Promise<boolean>;
 }
