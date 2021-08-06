@@ -1,6 +1,6 @@
 {
   "name": "@amplitude/experiment-react-native-client",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "description": "Official Amplitude Experiment React Native Client",
   "main": "lib/commonjs/index",
   "module": "lib/module/index",
