@@ -2,7 +2,6 @@ import Foundation
 import AmplitudeExperiment
 import Amplitude
 
-
 @objc(ExperimentReactNativeClient)
 class ExperimentReactNativeClient: NSObject {
 
@@ -48,10 +47,20 @@ class ExperimentReactNativeClient: NSObject {
             }
         }
         if let val = config?["fetchTimeoutMillis"] as! Int? {
-           let _ = builder.fetchTimeoutMillis(val)
+            let _ = builder.fetchTimeoutMillis(val)
         }
         if let val = config?["retryFetchOnFailure"] as! Bool? {
-           let _ = builder.fetchRetryOnFailure(val)
+            let _ = builder.fetchRetryOnFailure(val)
+        }
+        if let val = config?["amplitudeUserProviderInstanceName"] as! String? {
+            let amplitudeInstance = Amplitude.instance(withName: val)
+            let userProvider = AmplitudeUserProvider(amplitudeInstance)
+            let _ = builder.userProvider(userProvider)
+        }
+        if let val = config?["amplitudeAnalyticsProviderInstanceName"] as! String? {
+            let amplitudeInstance = Amplitude.instance(withName: val)
+            let analyticsProvider = AmplitudeAnalyticsProvider(amplitudeInstance)
+            let _ = builder.analyticsProvider(analyticsProvider)
         }
         experimentClient = Experiment.initialize(apiKey: apiKey, config: builder.build())
         resolve(true)
@@ -162,7 +171,6 @@ class ExperimentReactNativeClient: NSObject {
         resolve(variantMap)
     }
 
-
     @objc
     func all(
         _ resolve: RCTPromiseResolveBlock,
@@ -189,10 +197,20 @@ class ExperimentReactNativeClient: NSObject {
         resolver resolve: RCTPromiseResolveBlock,
         rejecter reject: RCTPromiseRejectBlock
     ) -> Void {
-        let amplitudeInstance = Amplitude.instance()
+        let amplitudeInstance = Amplitude.instance(withName: amplitudeInstanceName)
         let userProvider = AmplitudeUserProvider(amplitudeInstance)
         let _ = experimentClient?.setUserProvider(userProvider)
         resolve(true)
+    }
+}
+
+public class AmplitudeAnalyticsProvider : ExperimentAnalyticsProvider {
+    let amplitude: Amplitude
+    init(_ amplitude: Amplitude) {
+        self.amplitude = amplitude
+    }
+    public func track(_ event: ExperimentAnalyticsEvent) {
+        self.amplitude.logEvent(event.name, withEventProperties: event.properties as [AnyHashable : Any])
     }
 }
 

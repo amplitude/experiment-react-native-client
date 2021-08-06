@@ -6,6 +6,7 @@ import android.util.Log;
 import androidx.annotation.NonNull;
 
 import com.amplitude.api.Amplitude;
+import com.amplitude.api.AmplitudeAnalyticsProvider;
 import com.amplitude.api.AmplitudeClient;
 import com.amplitude.api.AmplitudeUserProvider;
 import com.amplitude.experiment.Experiment;
@@ -19,7 +20,6 @@ import com.facebook.react.bridge.ReactApplicationContext;
 import com.facebook.react.bridge.ReactContextBaseJavaModule;
 import com.facebook.react.bridge.ReactMethod;
 import com.facebook.react.bridge.ReadableMap;
-import com.facebook.react.bridge.ReadableType;
 import com.facebook.react.bridge.WritableMap;
 import com.facebook.react.bridge.WritableNativeMap;
 import com.facebook.react.module.annotations.ReactModule;
@@ -194,6 +194,20 @@ public class ExperimentReactNativeClientModule extends ReactContextBaseJavaModul
         }
         if (config.hasKey("retryFetchOnFailure")) {
             builder.retryFetchOnFailure(config.getBoolean("retryFetchOnFailure"));
+        }
+        if (config.hasKey("amplitudeUserProviderInstanceName")) {
+            String instanceName = config.getString("amplitudeUserProviderInstanceName");
+            AmplitudeClient amplitudeInstance = Amplitude.getInstance(instanceName);
+            if (amplitudeInstance != null) {
+                builder.userProvider(new AmplitudeUserProvider(amplitudeInstance));
+            }
+        }
+        if (config.hasKey("amplitudeAnalyticsProviderInstanceName")) {
+            String instanceName = config.getString("amplitudeAnalyticsProviderInstanceName");
+            AmplitudeClient amplitudeInstance = Amplitude.getInstance(instanceName);
+            if (amplitudeInstance != null) {
+                builder.analyticsProvider(new AmplitudeAnalyticsProvider(amplitudeInstance));
+            }
         }
         return builder.build();
     }
