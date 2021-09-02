@@ -3,10 +3,10 @@ PODS:
   - amplitude-react-native (2.3.0):
     - Amplitude (= 8.2.0)
     - React-Core
-  - AmplitudeExperiment (1.2.0)
-  - AmplitudeExperimentReactNative (0.2.0):
+  - AmplitudeExperiment (1.3.0)
+  - AmplitudeExperimentReactNative (0.3.0):
     - Amplitude
-    - AmplitudeExperiment (~> 1.2.0)
+    - AmplitudeExperiment (~> 1.3.0)
     - React-Core
   - boost-for-react-native (1.63.0)
   - CocoaAsyncSocket (7.6.5)
@@ -447,8 +447,8 @@ EXTERNAL SOURCES:
 SPEC CHECKSUMS:
   Amplitude: 263118b9e691e73a1c864b05bb08a3aff3636d16
   amplitude-react-native: c0f43590a4e61bcd30d7494e1c6151c517be48a4
-  AmplitudeExperiment: b660eb7775912379c774f879f737848eec77fb3a
-  AmplitudeExperimentReactNative: d23f56a256321282f687a21e8029f299fa4e5f06
+  AmplitudeExperiment: 0d8647a4dafc9eae15fc12a8d6a3b9d95a6f27ed
+  AmplitudeExperimentReactNative: 9821d09f037ce90eda99c473593968723b412e21
   boost-for-react-native: 39c7adb57c4e60d6c5479dd8623128eb5b3f0f2c
   CocoaAsyncSocket: 065fd1e645c7abab64f7a6a2007a48038fdc6a99
   DoubleConversion: cde416483dac037923206447da6e1454df403714

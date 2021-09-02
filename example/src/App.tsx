@@ -4,7 +4,6 @@ import { StyleSheet, View, Text } from 'react-native';
 import { Amplitude } from '@amplitude/react-native';
 import {
   Experiment,
-  Source,
   Variant,
   Variants,
 } from '@amplitude/experiment-react-native-client';
@@ -34,7 +33,6 @@ export default function App() {
         await Experiment.initialize('client-IAxMYws9vVQESrrK88aTcToyqMxiiJoR', {
           debug: true,
           fallbackVariant: { value: 'defaultFallback' },
-          source: Source.InitialVariants,
           initialVariants: {
             'flag-does-not-exist': {
               value: 'asdf',
