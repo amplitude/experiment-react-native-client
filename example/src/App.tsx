@@ -16,10 +16,9 @@ export default function App() {
   const [variantFallbackResult, setVariantFallbackResult] = React.useState<
     Variant | undefined
   >();
-  const [
-    variantWithPayloadResult,
-    setVariantWithPayloadResult,
-  ] = React.useState<Variant | undefined>();
+  const [payloadVariant, setPayloadVariant] = React.useState<
+    Variant | undefined
+  >();
   const [allVariants, setAllVariants] = React.useState<Variants | undefined>();
   React.useEffect(() => {
     (async () => {
@@ -57,7 +56,7 @@ export default function App() {
             },
           })
         );
-        setVariantWithPayloadResult(await Experiment.variant('android-demo'));
+        setPayloadVariant(await Experiment.variant('android-demo'));
         setAllVariants(await Experiment.all());
       }
     })();
@@ -74,7 +73,7 @@ export default function App() {
         {JSON.stringify(variantFallbackResult)}
       </Text>
       <Text style={styles.text}>
-        variant-with-payload: {JSON.stringify(variantWithPayloadResult)}
+        variant-with-payload: {JSON.stringify(payloadVariant)}
       </Text>
       <Text style={styles.text}>
         all variants: {JSON.stringify(allVariants)}
