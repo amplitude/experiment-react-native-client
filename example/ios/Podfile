@@ -8,7 +8,7 @@ target 'ExperimentReactNativeClientExample' do
 
   use_react_native!(:path => config["reactNativePath"])
 
-  pod 'AmplitudeExperimentReactNative', :path => '../..'
+  pod 'experiment-react-native-client', :path => '../..'
 
   # Enables Flipper.
   #

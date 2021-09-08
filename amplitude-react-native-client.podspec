@@ -3,7 +3,7 @@ require "json"
 package = JSON.parse(File.read(File.join(__dir__, "package.json")))
 
 Pod::Spec.new do |s|
-  s.name         = "amplitude-react-native-client"
+  s.name         = "experiment-react-native-client"
   s.version      = package["version"]
   s.summary      = package["description"]
   s.homepage     = package["homepage"]
@@ -16,6 +16,6 @@ Pod::Spec.new do |s|
   s.source_files = "ios/**/*.{h,m,mm,swift}"
 
   s.dependency "React-Core"
-  s.dependency "Amplitude"
-  s.dependency "AmplitudeExperiment", '1.3.0'
+  s.dependency "Amplitude", "8.3.1"
+  s.dependency "AmplitudeExperiment", "1.3.0"
 end
