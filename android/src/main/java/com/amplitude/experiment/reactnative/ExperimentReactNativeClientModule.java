@@ -24,6 +24,8 @@ import com.facebook.react.bridge.WritableMap;
 import com.facebook.react.bridge.WritableNativeMap;
 import com.facebook.react.module.annotations.ReactModule;
 
+import org.jetbrains.annotations.Nullable;
+
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
@@ -36,8 +38,8 @@ public class ExperimentReactNativeClientModule extends ReactContextBaseJavaModul
 
     public static final String NAME = "ExperimentReactNativeClient";
     private static final String TAG = "Experiment";
-    private ReactApplicationContext reactContext;
-    private ExecutorService executorService = Executors.newSingleThreadExecutor();
+    private final ReactApplicationContext reactContext;
+    private final ExecutorService executorService = Executors.newSingleThreadExecutor();
     private ExperimentClient experimentClient;
 
     public ExperimentReactNativeClientModule(ReactApplicationContext reactContext) {
@@ -212,6 +214,7 @@ public class ExperimentReactNativeClientModule extends ReactContextBaseJavaModul
         return builder.build();
     }
 
+    @Nullable
     private String safeGetString(ReadableMap map, String key) {
         if (map.hasKey(key)) {
             return map.getString(key);
@@ -219,13 +222,15 @@ public class ExperimentReactNativeClientModule extends ReactContextBaseJavaModul
         return null;
     }
 
-    private ReadableMap safeGetMap(ReadableMap map, String key) {
+    @Nullable
+    private Map<String, Object> safeGetMap(ReadableMap map, String key) {
         if (map.hasKey(key)) {
-            return map.getMap(key);
+            return map.getMap(key).toHashMap();
         }
         return null;
     }
 
+    @Nullable
     private Object safeGetObject(ReadableMap map, String key) {
         if (map.hasKey(key)) {
             return ReactNativeHelper.toMap(map).get(key);
@@ -270,7 +275,7 @@ public class ExperimentReactNativeClientModule extends ReactContextBaseJavaModul
                 .deviceModel(safeGetString(user, "device_model"))
                 .carrier(safeGetString(user, "carrier"))
                 .library(safeGetString(user, "library"))
-                .userProperties(safeGetMap(user, "user_properties").toHashMap());
+                .userProperties(safeGetMap(user, "user_properties"));
         return builder.build();
     }
 }
