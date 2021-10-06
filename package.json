@@ -23,7 +23,7 @@
   ],
   "scripts": {
     "test": "jest",
-    "generate:version": "genversion --es6 gen/version.ts",
+    "generate:version": "genversion --es6 src/gen/version.ts",
     "typescript": "tsc --noEmit",
     "lint": "eslint \"**/*.{js,ts,tsx}\"",
     "prepare": "yarn generate:version && bob build",

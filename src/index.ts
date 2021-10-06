@@ -6,7 +6,7 @@ import {
   Variants,
   ExperimentReactNativeClientModule,
 } from './types';
-import { version as PACKAGE_VERSION } from '../package.json';
+import { version as PACKAGE_VERSION } from './gen/version';
 
 export {
   ExperimentConfig,
