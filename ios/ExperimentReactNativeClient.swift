@@ -209,8 +209,19 @@ public class AmplitudeAnalyticsProvider : ExperimentAnalyticsProvider {
     init(_ amplitude: Amplitude) {
         self.amplitude = amplitude
     }
+
     public func track(_ event: ExperimentAnalyticsEvent) {
         self.amplitude.logEvent(event.name, withEventProperties: event.properties as [AnyHashable : Any])
+    }
+
+    public func setUserProperty(_ event: ExperimentAnalyticsEvent) {
+        let identify = AMPIdentify()
+        identify.set(event.userProperty, value: event.variant.value as NSObject?)
+        self.amplitude.identify(identify)
+    }
+
+    public func unsetUserProperty(_ event: ExperimentAnalyticsEvent) {
+        self.amplitude.identify(AMPIdentify().unset(event.userProperty))
     }
 }
 
