@@ -137,7 +137,7 @@ class ExperimentReactNativeClient: NSObject {
         if let val = user["library"] as! String? {
             let _ = builder.library(val)
         }
-        if let val = user["user_properties"] as! [String: String]? {
+        if let val = user["user_properties"] as! [String: Any]? {
             let _ = builder.userProperties(val)
         }
         return builder.build()

@@ -1,15 +1,15 @@
 PODS:
-  - Amplitude (8.2.0)
-  - amplitude-react-native (2.4.0):
-    - Amplitude (= 8.2.0)
+  - Amplitude (8.5.0)
+  - amplitude-react-native (2.6.0):
+    - Amplitude (= 8.5.0)
     - React-Core
-  - AmplitudeExperiment (1.4.1)
+  - AmplitudeExperiment (1.5.0)
   - boost-for-react-native (1.63.0)
   - CocoaAsyncSocket (7.6.5)
   - DoubleConversion (1.1.6)
-  - experiment-react-native-client (0.4.5):
+  - experiment-react-native-client (0.5.0):
     - Amplitude
-    - AmplitudeExperiment (= 1.4.1)
+    - AmplitudeExperiment (= 1.5.0)
     - React-Core
   - FBLazyVector (0.63.3)
   - FBReactNativeSpec (0.63.3):
@@ -445,13 +445,13 @@ EXTERNAL SOURCES:
     :path: "../node_modules/react-native/ReactCommon/yoga"
 
 SPEC CHECKSUMS:
-  Amplitude: 263118b9e691e73a1c864b05bb08a3aff3636d16
-  amplitude-react-native: ab47821981de1d0fcee70ee96213108d098f74ce
-  AmplitudeExperiment: ef667a2f93ed30722bdc5ebfe268a521625e9ce6
+  Amplitude: ef9ed339ddd33c9183edf63fa4bbaa86cf873321
+  amplitude-react-native: fa5e830e59fd8ed440a74d58fd72ad4b37e7c946
+  AmplitudeExperiment: 56180276d6dfc277659acac6495764de3e848d80
   boost-for-react-native: 39c7adb57c4e60d6c5479dd8623128eb5b3f0f2c
   CocoaAsyncSocket: 065fd1e645c7abab64f7a6a2007a48038fdc6a99
   DoubleConversion: cde416483dac037923206447da6e1454df403714
-  experiment-react-native-client: f968c9028feda135d5a2dc11d267b80f5c0b1312
+  experiment-react-native-client: 068bae981439827ac78d46fd9844a1706f59148f
   FBLazyVector: 878b59e31113e289e275165efbe4b54fa614d43d
   FBReactNativeSpec: 7da9338acfb98d4ef9e5536805a0704572d33c2f
   Flipper: 1bd2db48dcc31e4b167b9a33ec1df01c2ded4893

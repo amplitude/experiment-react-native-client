@@ -40,7 +40,9 @@ export default function App() {
           amplitudeUserProviderInstanceName: amplitudeInstanceName,
           amplitudeAnalyticsProviderInstanceName: amplitudeInstanceName,
         });
-        await Experiment.fetch({ user_properties: { test: '1' } });
+        await Experiment.fetch({
+          user_properties: { test: 'true', test2: 4.3 },
+        });
         setVariant(await Experiment.variant('react-native'));
         setFallbackResult(await Experiment.variant('flag-does-not-exist'));
         setVariantFallbackResult(
