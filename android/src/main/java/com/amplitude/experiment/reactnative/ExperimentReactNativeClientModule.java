@@ -20,14 +20,21 @@ import com.facebook.react.bridge.ReactApplicationContext;
 import com.facebook.react.bridge.ReactContextBaseJavaModule;
 import com.facebook.react.bridge.ReactMethod;
 import com.facebook.react.bridge.ReadableMap;
+import com.facebook.react.bridge.WritableArray;
 import com.facebook.react.bridge.WritableMap;
 import com.facebook.react.bridge.WritableNativeMap;
 import com.facebook.react.module.annotations.ReactModule;
 
 import org.jetbrains.annotations.Nullable;
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
 
+import java.math.BigDecimal;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -245,7 +252,22 @@ public class ExperimentReactNativeClientModule extends ReactContextBaseJavaModul
                 map.putString("value", variant.value);
             }
             if (variant.payload != null) {
-                ReactNativeHelper.putObject(map, "payload", variant.payload);
+                try {
+                    if (variant.payload instanceof JSONObject) {
+                        JSONObject payload = (JSONObject) variant.payload;
+                        WritableMap m = ReactNativeHelper.convertJsonToMap(payload);
+                        map.putMap("payload", m);
+                    } else if (variant.payload instanceof JSONArray) {
+                        JSONArray payload = (JSONArray) variant.payload;
+                        WritableArray a = ReactNativeHelper.convertJsonToArray(payload);
+                        map.putArray("payload", a);
+                    } else {
+                        ReactNativeHelper.putObject(map, "payload", variant.payload);
+                    }
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                    ReactNativeHelper.putObject(map, "payload", variant.payload);
+                }
             }
         }
         return map;
