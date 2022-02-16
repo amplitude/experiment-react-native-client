@@ -65,11 +65,27 @@ public class ExperimentReactNativeClientModule extends ReactContextBaseJavaModul
     @ReactMethod
     public void initialize(String apiKey, ReadableMap config, Promise promise) {
         try {
-            ExperimentConfig convertedConfig = convertConfig(config);
+            ExperimentConfig convertedConfig = convertConfig(config, false);
             experimentClient = Experiment.initialize(
                 (Application) this.reactContext.getApplicationContext(),
                 apiKey,
                 convertedConfig
+            );
+            promise.resolve(true);
+        } catch (Exception e) {
+            Log.e(TAG, e.getMessage(), e);
+            promise.reject(e);
+        }
+    }
+
+    @ReactMethod
+    public void initializeWithAmplitudeAnalytics(String apiKey, ReadableMap config, Promise promise) {
+        try {
+            ExperimentConfig convertedConfig = convertConfig(config, true);
+            experimentClient = Experiment.initializeWithAmplitudeAnalytics(
+                    (Application) this.reactContext.getApplicationContext(),
+                    apiKey,
+                    convertedConfig
             );
             promise.resolve(true);
         } catch (Exception e) {
@@ -113,6 +129,17 @@ public class ExperimentReactNativeClientModule extends ReactContextBaseJavaModul
         try {
             Variant variant = experimentClient.variant(key, null);
             promise.resolve(variantToMap(variant));
+        } catch (Exception e) {
+            Log.e(TAG, e.getMessage(), e);
+            promise.reject(e);
+        }
+    }
+
+    @ReactMethod
+    public void exposure(String flagKey, Promise promise) {
+        try {
+            experimentClient.exposure(flagKey);
+            promise.resolve(true);
         } catch (Exception e) {
             Log.e(TAG, e.getMessage(), e);
             promise.reject(e);
@@ -166,13 +193,16 @@ public class ExperimentReactNativeClientModule extends ReactContextBaseJavaModul
     }
 
     // Conversion methods
-    private ExperimentConfig convertConfig(ReadableMap config) {
+    private ExperimentConfig convertConfig(ReadableMap config, boolean integrated) {
         ExperimentConfig.Builder builder = ExperimentConfig.builder();
         if (config == null) {
             return builder.build();
         }
         if (config.hasKey("debug")) {
             builder.debug(config.getBoolean("debug"));
+        }
+        if (config.hasKey("instanceName")) {
+            builder.instanceName(config.getString("instanceName"));
         }
         if (config.hasKey("fallbackVariant")) {
             ReadableMap map = config.getMap("fallbackVariant");
@@ -204,19 +234,29 @@ public class ExperimentReactNativeClientModule extends ReactContextBaseJavaModul
         if (config.hasKey("retryFetchOnFailure")) {
             builder.retryFetchOnFailure(config.getBoolean("retryFetchOnFailure"));
         }
-        if (config.hasKey("amplitudeUserProviderInstanceName")) {
+        if (config.hasKey("automaticExposureTracking")) {
+            builder.automaticExposureTracking(config.getBoolean("automaticExposureTracking"));
+        }
+        if (config.hasKey("automaticFetchOnAmplitudeIdentityChange")) {
+            builder.automaticFetchOnAmplitudeIdentityChange(config.getBoolean("automaticFetchOnAmplitudeIdentityChange"));
+        }
+
+        if (!integrated) {
+          // Deprecated
+          if (config.hasKey("amplitudeUserProviderInstanceName")) {
             String instanceName = config.getString("amplitudeUserProviderInstanceName");
             AmplitudeClient amplitudeInstance = Amplitude.getInstance(instanceName);
             if (amplitudeInstance != null) {
-                builder.userProvider(new AmplitudeUserProvider(amplitudeInstance));
+              builder.userProvider(new AmplitudeUserProvider(amplitudeInstance));
             }
-        }
-        if (config.hasKey("amplitudeAnalyticsProviderInstanceName")) {
+          }
+          if (config.hasKey("amplitudeAnalyticsProviderInstanceName")) {
             String instanceName = config.getString("amplitudeAnalyticsProviderInstanceName");
             AmplitudeClient amplitudeInstance = Amplitude.getInstance(instanceName);
             if (amplitudeInstance != null) {
-                builder.analyticsProvider(new AmplitudeAnalyticsProvider(amplitudeInstance));
+              builder.analyticsProvider(new AmplitudeAnalyticsProvider(amplitudeInstance));
             }
+          }
         }
         return builder.build();
     }
