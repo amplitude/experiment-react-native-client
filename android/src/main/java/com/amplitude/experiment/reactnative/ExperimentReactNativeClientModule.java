@@ -40,8 +40,8 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 
-@ReactModule(name = ExperimentReactNativeClientModule.NAME)
-public class ExperimentReactNativeClientModule extends ReactContextBaseJavaModule {
+@ReactModule(name = ExperimentReactNativeClientModule.NAME) public class ExperimentReactNativeClientModule
+        extends ReactContextBaseJavaModule {
 
     public static final String NAME = "ExperimentReactNativeClient";
     private static final String TAG = "Experiment";
@@ -54,23 +54,17 @@ public class ExperimentReactNativeClientModule extends ReactContextBaseJavaModul
         this.reactContext = reactContext;
     }
 
-    @Override
-    @NonNull
-    public String getName() {
+    @Override @NonNull public String getName() {
         return NAME;
     }
 
     // Example method
     // See https://reactnative.dev/docs/native-modules-android
-    @ReactMethod
-    public void initialize(String apiKey, ReadableMap config, Promise promise) {
+    @ReactMethod public void initialize(String apiKey, ReadableMap config, Promise promise) {
         try {
             ExperimentConfig convertedConfig = convertConfig(config, false);
-            experimentClient = Experiment.initialize(
-                (Application) this.reactContext.getApplicationContext(),
-                apiKey,
-                convertedConfig
-            );
+            experimentClient = Experiment.initialize((Application) this.reactContext.getApplicationContext(), apiKey,
+                    convertedConfig);
             promise.resolve(true);
         } catch (Exception e) {
             Log.e(TAG, e.getMessage(), e);
@@ -78,15 +72,11 @@ public class ExperimentReactNativeClientModule extends ReactContextBaseJavaModul
         }
     }
 
-    @ReactMethod
-    public void initializeWithAmplitudeAnalytics(String apiKey, ReadableMap config, Promise promise) {
+    @ReactMethod public void initializeWithAmplitudeAnalytics(String apiKey, ReadableMap config, Promise promise) {
         try {
             ExperimentConfig convertedConfig = convertConfig(config, true);
             experimentClient = Experiment.initializeWithAmplitudeAnalytics(
-                    (Application) this.reactContext.getApplicationContext(),
-                    apiKey,
-                    convertedConfig
-            );
+                    (Application) this.reactContext.getApplicationContext(), apiKey, convertedConfig);
             promise.resolve(true);
         } catch (Exception e) {
             Log.e(TAG, e.getMessage(), e);
@@ -94,8 +84,7 @@ public class ExperimentReactNativeClientModule extends ReactContextBaseJavaModul
         }
     }
 
-    @ReactMethod
-    public void fetch(ReadableMap user, Promise promise) {
+    @ReactMethod public void fetch(ReadableMap user, Promise promise) {
         try {
             ExperimentUser experimentUser = user != null ? convertUser(user) : null;
             Future<ExperimentClient> future = experimentClient.fetch(experimentUser);
@@ -113,8 +102,7 @@ public class ExperimentReactNativeClientModule extends ReactContextBaseJavaModul
         }
     }
 
-    @ReactMethod
-    public void setUser(ReadableMap user, Promise promise) {
+    @ReactMethod public void setUser(ReadableMap user, Promise promise) {
         try {
             experimentClient.setUser(convertUser(user));
             promise.resolve(true);
@@ -124,8 +112,7 @@ public class ExperimentReactNativeClientModule extends ReactContextBaseJavaModul
         }
     }
 
-    @ReactMethod
-    public void variant(String key, Promise promise) {
+    @ReactMethod public void variant(String key, Promise promise) {
         try {
             Variant variant = experimentClient.variant(key, null);
             promise.resolve(variantToMap(variant));
@@ -135,8 +122,7 @@ public class ExperimentReactNativeClientModule extends ReactContextBaseJavaModul
         }
     }
 
-    @ReactMethod
-    public void exposure(String flagKey, Promise promise) {
+    @ReactMethod public void exposure(String flagKey, Promise promise) {
         try {
             experimentClient.exposure(flagKey);
             promise.resolve(true);
@@ -146,14 +132,11 @@ public class ExperimentReactNativeClientModule extends ReactContextBaseJavaModul
         }
     }
 
-    @ReactMethod
-    public void variantWithFallback(String flagKey, ReadableMap fallback,
-                                           Promise promise) {
+    @ReactMethod public void variantWithFallback(String flagKey, ReadableMap fallback, Promise promise) {
         try {
             Variant fallbackVariant = new Variant(null, null);
             if (fallback != null) {
-                fallbackVariant = new Variant(safeGetString(fallback, "value"),
-                        safeGetObject(fallback, "payload"));
+                fallbackVariant = new Variant(safeGetString(fallback, "value"), safeGetObject(fallback, "payload"));
             }
             Variant variant = experimentClient.variant(flagKey, fallbackVariant);
             promise.resolve(variantToMap(variant));
@@ -163,8 +146,7 @@ public class ExperimentReactNativeClientModule extends ReactContextBaseJavaModul
         }
     }
 
-    @ReactMethod
-    public void all(Promise promise) {
+    @ReactMethod public void all(Promise promise) {
         try {
             WritableMap map = new WritableNativeMap();
             Map<String, Variant> variants = experimentClient.all();
@@ -178,8 +160,7 @@ public class ExperimentReactNativeClientModule extends ReactContextBaseJavaModul
         }
     }
 
-    @ReactMethod
-    public void setAmplitudeUserProvider(String amplitudeInstanceName, Promise promise) {
+    @ReactMethod public void setAmplitudeUserProvider(String amplitudeInstanceName, Promise promise) {
         try {
             AmplitudeClient amplitudeInstance = Amplitude.getInstance(amplitudeInstanceName);
             if (amplitudeInstance != null) {
@@ -206,10 +187,7 @@ public class ExperimentReactNativeClientModule extends ReactContextBaseJavaModul
         }
         if (config.hasKey("fallbackVariant")) {
             ReadableMap map = config.getMap("fallbackVariant");
-            Variant fallbackVariant = new Variant(
-                safeGetString(map, "value"),
-                safeGetObject(map, "payload")
-            );
+            Variant fallbackVariant = new Variant(safeGetString(map, "value"), safeGetObject(map, "payload"));
             builder.fallbackVariant(fallbackVariant);
         }
         if (config.hasKey("initialVariants")) {
@@ -238,47 +216,45 @@ public class ExperimentReactNativeClientModule extends ReactContextBaseJavaModul
             builder.automaticExposureTracking(config.getBoolean("automaticExposureTracking"));
         }
         if (config.hasKey("automaticFetchOnAmplitudeIdentityChange")) {
-            builder.automaticFetchOnAmplitudeIdentityChange(config.getBoolean("automaticFetchOnAmplitudeIdentityChange"));
+            builder.automaticFetchOnAmplitudeIdentityChange(
+                    config.getBoolean("automaticFetchOnAmplitudeIdentityChange"));
         }
 
         if (!integrated) {
-          // Deprecated
-          if (config.hasKey("amplitudeUserProviderInstanceName")) {
-            String instanceName = config.getString("amplitudeUserProviderInstanceName");
-            AmplitudeClient amplitudeInstance = Amplitude.getInstance(instanceName);
-            if (amplitudeInstance != null) {
-              builder.userProvider(new AmplitudeUserProvider(amplitudeInstance));
+            // Deprecated
+            if (config.hasKey("amplitudeUserProviderInstanceName")) {
+                String instanceName = config.getString("amplitudeUserProviderInstanceName");
+                AmplitudeClient amplitudeInstance = Amplitude.getInstance(instanceName);
+                if (amplitudeInstance != null) {
+                    builder.userProvider(new AmplitudeUserProvider(amplitudeInstance));
+                }
             }
-          }
-          if (config.hasKey("amplitudeAnalyticsProviderInstanceName")) {
-            String instanceName = config.getString("amplitudeAnalyticsProviderInstanceName");
-            AmplitudeClient amplitudeInstance = Amplitude.getInstance(instanceName);
-            if (amplitudeInstance != null) {
-              builder.analyticsProvider(new AmplitudeAnalyticsProvider(amplitudeInstance));
+            if (config.hasKey("amplitudeAnalyticsProviderInstanceName")) {
+                String instanceName = config.getString("amplitudeAnalyticsProviderInstanceName");
+                AmplitudeClient amplitudeInstance = Amplitude.getInstance(instanceName);
+                if (amplitudeInstance != null) {
+                    builder.analyticsProvider(new AmplitudeAnalyticsProvider(amplitudeInstance));
+                }
             }
-          }
         }
         return builder.build();
     }
 
-    @Nullable
-    private String safeGetString(ReadableMap map, String key) {
+    @Nullable private String safeGetString(ReadableMap map, String key) {
         if (map.hasKey(key)) {
             return map.getString(key);
         }
         return null;
     }
 
-    @Nullable
-    private Map<String, Object> safeGetMap(ReadableMap map, String key) {
+    @Nullable private Map<String, Object> safeGetMap(ReadableMap map, String key) {
         if (map.hasKey(key)) {
             return map.getMap(key).toHashMap();
         }
         return null;
     }
 
-    @Nullable
-    private Object safeGetObject(ReadableMap map, String key) {
+    @Nullable private Object safeGetObject(ReadableMap map, String key) {
         if (map.hasKey(key)) {
             return ReactNativeHelper.toMap(map).get(key);
         }
@@ -322,22 +298,14 @@ public class ExperimentReactNativeClientModule extends ReactContextBaseJavaModul
             return null;
         }
         ExperimentUser.Builder builder = ExperimentUser.builder();
-        builder.deviceId(safeGetString(user, "device_id"))
-                .userId(safeGetString(user, "user_id"))
-                .version(safeGetString(user, "version"))
-                .country(safeGetString(user, "country"))
-                .region(safeGetString(user, "region"))
-                .dma(safeGetString(user, "dma"))
-                .city(safeGetString(user, "city"))
-                .language(safeGetString(user, "language"))
-                .platform(safeGetString(user, "platform"))
-                .os(safeGetString(user, "os"))
-                .deviceBrand(safeGetString(user, "device_brand"))
+        builder.deviceId(safeGetString(user, "device_id")).userId(safeGetString(user, "user_id"))
+                .version(safeGetString(user, "version")).country(safeGetString(user, "country"))
+                .region(safeGetString(user, "region")).dma(safeGetString(user, "dma")).city(safeGetString(user, "city"))
+                .language(safeGetString(user, "language")).platform(safeGetString(user, "platform"))
+                .os(safeGetString(user, "os")).deviceBrand(safeGetString(user, "device_brand"))
                 .deviceManufacturer(safeGetString(user, "device_manufacturer"))
-                .deviceModel(safeGetString(user, "device_model"))
-                .carrier(safeGetString(user, "carrier"))
-                .library(safeGetString(user, "library"))
-                .userProperties(safeGetMap(user, "user_properties"));
+                .deviceModel(safeGetString(user, "device_model")).carrier(safeGetString(user, "carrier"))
+                .library(safeGetString(user, "library")).userProperties(safeGetMap(user, "user_properties"));
         return builder.build();
     }
 }
