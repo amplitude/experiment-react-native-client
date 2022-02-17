@@ -158,16 +158,19 @@ class ExperimentReactNativeClient: NSObject {
         }
 
         // Deprecated
-        if let val = config?["amplitudeUserProviderInstanceName"] as! String? {
-            let amplitudeInstance = Amplitude.instance(withName: val)
-            let userProvider = AmplitudeUserProvider(amplitudeInstance)
-            let _ = builder.userProvider(userProvider)
+        if !integrated {
+            if let val = config?["amplitudeUserProviderInstanceName"] as! String? {
+                let amplitudeInstance = Amplitude.instance(withName: val)
+                let userProvider = AmplitudeUserProvider(amplitudeInstance)
+                let _ = builder.userProvider(userProvider)
+            }
+            if let val = config?["amplitudeAnalyticsProviderInstanceName"] as! String? {
+                let amplitudeInstance = Amplitude.instance(withName: val)
+                let analyticsProvider = AmplitudeAnalyticsProvider(amplitudeInstance)
+                let _ = builder.analyticsProvider(analyticsProvider)
+            }
         }
-        if let val = config?["amplitudeAnalyticsProviderInstanceName"] as! String? {
-            let amplitudeInstance = Amplitude.instance(withName: val)
-            let analyticsProvider = AmplitudeAnalyticsProvider(amplitudeInstance)
-            let _ = builder.analyticsProvider(analyticsProvider)
-        }
+
         return builder.build()
     }
 

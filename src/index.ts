@@ -28,10 +28,13 @@ export const Experiment = {
   },
 
   initializeWithAmplitudeAnalytics: async (
-      apiKey: string,
-      config?: ExperimentConfig
+    apiKey: string,
+    config?: ExperimentConfig
   ): Promise<boolean> => {
-    return ExperimentReactNativeClient.initializeWithAmplitudeAnalytics(apiKey, config);
+    return ExperimentReactNativeClient.initializeWithAmplitudeAnalytics(
+      apiKey,
+      config
+    );
   },
 
   fetch: async (user?: ExperimentUser): Promise<boolean> => {
@@ -61,7 +64,7 @@ export const Experiment = {
   },
 
   exposure: async (): Promise<boolean> => {
-    return ExperimentReactNativeClient.exposure()
+    return ExperimentReactNativeClient.exposure();
   },
 
   setAmplitudeUserProvider(amplitudeInstanceName?: string): Promise<boolean> {

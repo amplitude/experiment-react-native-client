@@ -229,7 +229,10 @@ export interface ExperimentConfig {
 
 export interface ExperimentReactNativeClientModule {
   initialize(apiKey: string, config?: ExperimentConfig): Promise<boolean>;
-  initializeWithAmplitudeAnalytics(apiKey: string, config?: ExperimentConfig): Promise<boolean>;
+  initializeWithAmplitudeAnalytics(
+    apiKey: string,
+    config?: ExperimentConfig
+  ): Promise<boolean>;
   fetch(user?: ExperimentUser): Promise<boolean>;
   setUser(user: ExperimentUser): Promise<boolean>;
   variant(key: string): Promise<Variant>;
