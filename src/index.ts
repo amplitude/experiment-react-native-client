@@ -63,8 +63,8 @@ export const Experiment = {
     return ExperimentReactNativeClient.all();
   },
 
-  exposure: async (): Promise<boolean> => {
-    return ExperimentReactNativeClient.exposure();
+  exposure: async (key: string): Promise<boolean> => {
+    return ExperimentReactNativeClient.exposure(key);
   },
 
   setAmplitudeUserProvider(amplitudeInstanceName?: string): Promise<boolean> {

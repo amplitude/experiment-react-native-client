@@ -224,11 +224,11 @@ class ExperimentReactNativeClient: NSObject {
 
     @objc
     func exposure(
-        _ flagKey: String,
+        _ key: String,
         resolver resolve: RCTPromiseResolveBlock,
         rejecter reject: RCTPromiseRejectBlock
     ) -> Void {
-        experimentClient?.exposure(key: flagKey)
+        experimentClient?.exposure(key: key)
         resolve(true)
     }
 

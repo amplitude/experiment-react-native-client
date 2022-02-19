@@ -238,7 +238,7 @@ export interface ExperimentReactNativeClientModule {
   variant(key: string): Promise<Variant>;
   variantWithFallback(key: string, fallback: Variant): Promise<Variant>;
   all(): Promise<Variants>;
-  exposure(): Promise<boolean>;
+  exposure(key: string): Promise<boolean>;
   /**
    * @deprecated use {@link initializeWithAmplitudeAnalytics} to integrate with the amplitude analytics sdk.
    */

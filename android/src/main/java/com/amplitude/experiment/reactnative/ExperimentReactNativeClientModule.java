@@ -122,9 +122,9 @@ import java.util.concurrent.Future;
         }
     }
 
-    @ReactMethod public void exposure(String flagKey, Promise promise) {
+    @ReactMethod public void exposure(String key, Promise promise) {
         try {
-            experimentClient.exposure(flagKey);
+            experimentClient.exposure(key);
             promise.resolve(true);
         } catch (Exception e) {
             Log.e(TAG, e.getMessage(), e);

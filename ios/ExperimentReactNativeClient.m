@@ -12,6 +12,8 @@ RCT_EXTERN_METHOD(setUser:(NSDictionary *)user resolver:(RCTPromiseResolveBlock)
 
 RCT_EXTERN_METHOD(variant:(NSString *)key resolver:(RCTPromiseResolveBlock)resolve rejecter:(RCTPromiseRejectBlock)reject)
 
+RCT_EXTERN_METHOD(exposure:(NSString *)key resolver:(RCTPromiseResolveBlock)resolve rejecter:(RCTPromiseRejectBlock)reject)
+
 RCT_EXTERN_METHOD(variantWithFallback:(NSString *)key fallback:(NSDictionary *)fallback resolver:(RCTPromiseResolveBlock)resolve rejecter:(RCTPromiseRejectBlock)reject)
 
 RCT_EXTERN_METHOD(all: (RCTPromiseResolveBlock)resolve rejecter:(RCTPromiseRejectBlock)reject)
