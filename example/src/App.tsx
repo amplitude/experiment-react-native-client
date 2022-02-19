@@ -1,7 +1,7 @@
 import * as React from 'react';
 
 import { StyleSheet, View, Text } from 'react-native';
-import { Amplitude, Identify } from '@amplitude/react-native';
+import { Amplitude } from '@amplitude/react-native';
 import {
   Experiment,
   Variant,
@@ -24,14 +24,17 @@ export default function App() {
     (async () => {
       if (Amplitude) {
         await Amplitude.getInstance().init('a6dd847b9d2f03c816d4f3f8458cdc1d');
-        await Amplitude.getInstance().setUserId("brian.giori@amplitude.com")
+        await Amplitude.getInstance().setUserId('brian.giori@amplitude.com');
       }
       if (Experiment) {
-        await Experiment.initializeWithAmplitudeAnalytics('client-IAxMYws9vVQESrrK88aTcToyqMxiiJoR', {
-          debug: true,
-          fallbackVariant: { value: 'defaultFallback' },
-          automaticExposureTracking: true,
-        });
+        await Experiment.initializeWithAmplitudeAnalytics(
+          'client-IAxMYws9vVQESrrK88aTcToyqMxiiJoR',
+          {
+            debug: true,
+            fallbackVariant: { value: 'defaultFallback' },
+            automaticExposureTracking: true,
+          }
+        );
         await Experiment.fetch({
           user_properties: { test: 'true', test2: 4.3 },
         });
