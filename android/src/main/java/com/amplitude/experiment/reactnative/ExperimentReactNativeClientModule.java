@@ -40,8 +40,8 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 
-@ReactModule(name = ExperimentReactNativeClientModule.NAME) public class ExperimentReactNativeClientModule
-        extends ReactContextBaseJavaModule {
+@ReactModule(name = ExperimentReactNativeClientModule.NAME)
+public class ExperimentReactNativeClientModule extends ReactContextBaseJavaModule {
 
     public static final String NAME = "ExperimentReactNativeClient";
     private static final String TAG = "Experiment";
@@ -54,13 +54,16 @@ import java.util.concurrent.Future;
         this.reactContext = reactContext;
     }
 
-    @Override @NonNull public String getName() {
+    @Override
+    @NonNull
+    public String getName() {
         return NAME;
     }
 
     // Example method
     // See https://reactnative.dev/docs/native-modules-android
-    @ReactMethod public void initialize(String apiKey, ReadableMap config, Promise promise) {
+    @ReactMethod
+    public void initialize(String apiKey, ReadableMap config, Promise promise) {
         try {
             ExperimentConfig convertedConfig = convertConfig(config, false);
             experimentClient = Experiment.initialize((Application) this.reactContext.getApplicationContext(), apiKey,
@@ -72,7 +75,8 @@ import java.util.concurrent.Future;
         }
     }
 
-    @ReactMethod public void initializeWithAmplitudeAnalytics(String apiKey, ReadableMap config, Promise promise) {
+    @ReactMethod
+    public void initializeWithAmplitudeAnalytics(String apiKey, ReadableMap config, Promise promise) {
         try {
             ExperimentConfig convertedConfig = convertConfig(config, true);
             experimentClient = Experiment.initializeWithAmplitudeAnalytics(
@@ -84,7 +88,8 @@ import java.util.concurrent.Future;
         }
     }
 
-    @ReactMethod public void fetch(ReadableMap user, Promise promise) {
+    @ReactMethod
+    public void fetch(ReadableMap user, Promise promise) {
         try {
             ExperimentUser experimentUser = user != null ? convertUser(user) : null;
             Future<ExperimentClient> future = experimentClient.fetch(experimentUser);
@@ -102,7 +107,8 @@ import java.util.concurrent.Future;
         }
     }
 
-    @ReactMethod public void setUser(ReadableMap user, Promise promise) {
+    @ReactMethod
+    public void setUser(ReadableMap user, Promise promise) {
         try {
             experimentClient.setUser(convertUser(user));
             promise.resolve(true);
@@ -112,7 +118,8 @@ import java.util.concurrent.Future;
         }
     }
 
-    @ReactMethod public void variant(String key, Promise promise) {
+    @ReactMethod
+    public void variant(String key, Promise promise) {
         try {
             Variant variant = experimentClient.variant(key, null);
             promise.resolve(variantToMap(variant));
@@ -122,7 +129,8 @@ import java.util.concurrent.Future;
         }
     }
 
-    @ReactMethod public void exposure(String key, Promise promise) {
+    @ReactMethod
+    public void exposure(String key, Promise promise) {
         try {
             experimentClient.exposure(key);
             promise.resolve(true);
@@ -132,7 +140,8 @@ import java.util.concurrent.Future;
         }
     }
 
-    @ReactMethod public void variantWithFallback(String flagKey, ReadableMap fallback, Promise promise) {
+    @ReactMethod
+    public void variantWithFallback(String flagKey, ReadableMap fallback, Promise promise) {
         try {
             Variant fallbackVariant = new Variant(null, null);
             if (fallback != null) {
@@ -146,7 +155,8 @@ import java.util.concurrent.Future;
         }
     }
 
-    @ReactMethod public void all(Promise promise) {
+    @ReactMethod
+    public void all(Promise promise) {
         try {
             WritableMap map = new WritableNativeMap();
             Map<String, Variant> variants = experimentClient.all();
@@ -160,7 +170,8 @@ import java.util.concurrent.Future;
         }
     }
 
-    @ReactMethod public void setAmplitudeUserProvider(String amplitudeInstanceName, Promise promise) {
+    @ReactMethod
+    public void setAmplitudeUserProvider(String amplitudeInstanceName, Promise promise) {
         try {
             AmplitudeClient amplitudeInstance = Amplitude.getInstance(amplitudeInstanceName);
             if (amplitudeInstance != null) {
@@ -240,21 +251,24 @@ import java.util.concurrent.Future;
         return builder.build();
     }
 
-    @Nullable private String safeGetString(ReadableMap map, String key) {
+    @Nullable
+    private String safeGetString(ReadableMap map, String key) {
         if (map.hasKey(key)) {
             return map.getString(key);
         }
         return null;
     }
 
-    @Nullable private Map<String, Object> safeGetMap(ReadableMap map, String key) {
+    @Nullable
+    private Map<String, Object> safeGetMap(ReadableMap map, String key) {
         if (map.hasKey(key)) {
             return map.getMap(key).toHashMap();
         }
         return null;
     }
 
-    @Nullable private Object safeGetObject(ReadableMap map, String key) {
+    @Nullable
+    private Object safeGetObject(ReadableMap map, String key) {
         if (map.hasKey(key)) {
             return ReactNativeHelper.toMap(map).get(key);
         }
