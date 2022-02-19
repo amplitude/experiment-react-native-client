@@ -9,7 +9,7 @@
     "start": "react-native start"
   },
   "dependencies": {
-    "@amplitude/react-native": "^2.1.2",
+    "@amplitude/react-native": "2.8.0",
     "react": "16.13.1",
     "react-native": "0.63.3"
   },

@@ -22,24 +22,18 @@ export default function App() {
   const [allVariants, setAllVariants] = React.useState<Variants | undefined>();
   React.useEffect(() => {
     (async () => {
-      let amplitudeInstanceName;
       if (Amplitude) {
-        const amplitude = Amplitude.getInstance();
-        amplitude.init('a6dd847b9d2f03c816d4f3f8458cdc1d');
-        amplitudeInstanceName = amplitude.instanceName;
+        await Amplitude.getInstance().init('a6dd847b9d2f03c816d4f3f8458cdc1d');
+        await Amplitude.getInstance().setUserId('brian.giori@amplitude.com');
       }
       if (Experiment) {
-        await Experiment.initialize('client-IAxMYws9vVQESrrK88aTcToyqMxiiJoR', {
-          debug: true,
-          fallbackVariant: { value: 'defaultFallback' },
-          initialVariants: {
-            'flag-does-not-exist': {
-              value: 'asdf',
-            },
-          },
-          amplitudeUserProviderInstanceName: amplitudeInstanceName,
-          amplitudeAnalyticsProviderInstanceName: amplitudeInstanceName,
-        });
+        await Experiment.initializeWithAmplitudeAnalytics(
+          'client-IAxMYws9vVQESrrK88aTcToyqMxiiJoR',
+          {
+            debug: true,
+            fallbackVariant: { value: 'defaultFallback' },
+          }
+        );
         await Experiment.fetch({
           user_properties: { test: 'true', test2: 4.3 },
         });

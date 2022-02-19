@@ -18,51 +18,20 @@ class ExperimentReactNativeClient: NSObject {
         resolver resolve: RCTPromiseResolveBlock,
         rejecter reject: RCTPromiseRejectBlock
     ) -> Void {
-        let builder = ExperimentConfig.Builder()
-        if let val = config?["debug"] as! Bool? {
-            let _ = builder.debug(val)
-        }
-        if let val = config?["fallbackVariant"] as! [String: Any]? {
-            let _ = builder.fallbackVariant(Variant.init(val["value"] as! String?, payload: val["payload"]))
-        }
-        if let val = config?["initialVariants"] as! [String: [String: Any]]? {
-            let initialVariants = val.mapValues { value in
-                return Variant.init(value["value"] as! String?, payload: value["payload"])
-            }
-            let _ = builder.initialVariants(initialVariants)
-        }
-        if let val = config?["serverUrl"] as! String? {
-            let _ = builder.serverUrl(val)
-        }
-        if let val = config?["source"] as! String? {
-            var source: Source? = nil
-            if (val == "LOCAL_STORAGE") {
-                source = Source.LocalStorage
-            } else if (val == "INITIAL_VARIANTS") {
-                source = Source.InitialVariants
-            }
+        let convertedConfig = convertConfig(config: config, integrated: false)
+        experimentClient = Experiment.initialize(apiKey: apiKey, config: convertedConfig)
+        resolve(true)
+    }
 
-            if let source = source {
-                let _ = builder.source(source)
-            }
-        }
-        if let val = config?["fetchTimeoutMillis"] as! Int? {
-            let _ = builder.fetchTimeoutMillis(val)
-        }
-        if let val = config?["retryFetchOnFailure"] as! Bool? {
-            let _ = builder.fetchRetryOnFailure(val)
-        }
-        if let val = config?["amplitudeUserProviderInstanceName"] as! String? {
-            let amplitudeInstance = Amplitude.instance(withName: val)
-            let userProvider = AmplitudeUserProvider(amplitudeInstance)
-            let _ = builder.userProvider(userProvider)
-        }
-        if let val = config?["amplitudeAnalyticsProviderInstanceName"] as! String? {
-            let amplitudeInstance = Amplitude.instance(withName: val)
-            let analyticsProvider = AmplitudeAnalyticsProvider(amplitudeInstance)
-            let _ = builder.analyticsProvider(analyticsProvider)
-        }
-        experimentClient = Experiment.initialize(apiKey: apiKey, config: builder.build())
+    @objc
+    func initializeWithAmplitudeAnalytics(
+        _ apiKey: String,
+        config: [String:Any]?,
+        resolver resolve: RCTPromiseResolveBlock,
+        rejecter reject: RCTPromiseRejectBlock
+    ) -> Void {
+        let convertedConfig = convertConfig(config: config, integrated: true)
+        experimentClient = Experiment.initializeWithAmplitudeAnalytics(apiKey: apiKey, config: convertedConfig)
         resolve(true)
     }
 
@@ -144,6 +113,68 @@ class ExperimentReactNativeClient: NSObject {
     }
 
     @objc
+    func convertConfig(config: [String:Any]?, integrated: Bool) -> ExperimentConfig {
+        let builder = ExperimentConfig.Builder()
+        if let val = config?["debug"] as! Bool? {
+            let _ = builder.debug(val)
+        }
+        if let val = config?["instanceName"] as! String? {
+            let _ = builder.instanceName(val)
+        }
+        if let val = config?["fallbackVariant"] as! [String: Any]? {
+            let _ = builder.fallbackVariant(Variant.init(val["value"] as! String?, payload: val["payload"]))
+        }
+        if let val = config?["initialVariants"] as! [String: [String: Any]]? {
+            let initialVariants = val.mapValues { value in
+                return Variant.init(value["value"] as! String?, payload: value["payload"])
+            }
+            let _ = builder.initialVariants(initialVariants)
+        }
+        if let val = config?["serverUrl"] as! String? {
+            let _ = builder.serverUrl(val)
+        }
+        if let val = config?["source"] as! String? {
+            var source: Source? = nil
+            if (val == "LOCAL_STORAGE") {
+                source = Source.LocalStorage
+            } else if (val == "INITIAL_VARIANTS") {
+                source = Source.InitialVariants
+            }
+            if let source = source {
+                let _ = builder.source(source)
+            }
+        }
+        if let val = config?["fetchTimeoutMillis"] as! Int? {
+            let _ = builder.fetchTimeoutMillis(val)
+        }
+        if let val = config?["retryFetchOnFailure"] as! Bool? {
+            let _ = builder.fetchRetryOnFailure(val)
+        }
+        if let val = config?["automaticExposureTracking"] as! Bool? {
+            let _ = builder.automaticExposureTracking(val)
+        }
+        if let val = config?["automaticFetchOnAmplitudeIdentityChange"] as! Bool? {
+            let _ = builder.automaticFetchOnAmplitudeIdentityChange(val)
+        }
+
+        // Deprecated
+        if !integrated {
+            if let val = config?["amplitudeUserProviderInstanceName"] as! String? {
+                let amplitudeInstance = Amplitude.instance(withName: val)
+                let userProvider = AmplitudeUserProvider(amplitudeInstance)
+                let _ = builder.userProvider(userProvider)
+            }
+            if let val = config?["amplitudeAnalyticsProviderInstanceName"] as! String? {
+                let amplitudeInstance = Amplitude.instance(withName: val)
+                let analyticsProvider = AmplitudeAnalyticsProvider(amplitudeInstance)
+                let _ = builder.analyticsProvider(analyticsProvider)
+            }
+        }
+
+        return builder.build()
+    }
+
+    @objc
     func variant(
         _ key: String,
         resolver resolve: RCTPromiseResolveBlock,
@@ -189,6 +220,16 @@ class ExperimentReactNativeClient: NSObject {
         } else {
             resolve(nil)
         }
+    }
+
+    @objc
+    func exposure(
+        _ key: String,
+        resolver resolve: RCTPromiseResolveBlock,
+        rejecter reject: RCTPromiseRejectBlock
+    ) -> Void {
+        experimentClient?.exposure(key: key)
+        resolve(true)
     }
 
     @objc

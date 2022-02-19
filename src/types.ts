@@ -149,7 +149,14 @@ export interface ExperimentConfig {
   debug?: boolean;
 
   /**
-   * The default fallback variant for all {@link ExperimentClient.variant}
+   * The name of the instance being initialized. Used for initializing separate
+   * instances of experiment or linking the experiment SDK to a specific
+   * instance of the amplitude analytics SDK.
+   */
+  instanceName?: string;
+
+  /**
+   * The default fallback variant for all {@link variant}
    * calls.
    */
   fallbackVariant?: Variant;
@@ -184,25 +191,56 @@ export interface ExperimentConfig {
   retryFetchOnFailure?: boolean;
 
   /**
+   * If true, automatically tracks exposure events though the
+   * `ExperimentAnalyticsProvider`. If no analytics provider is set, this
+   * option does nothing.
+   */
+  automaticExposureTracking?: boolean;
+
+  /**
+   * This config only matters if you are using the amplitude analytics SDK
+   * integration initialized by calling
+   * `Experiment.initializeWithAmplitudeAnalytics()`.
+   *
+   * If true, the client will automatically fetch variants when the
+   * user's identity changes. The user's identity includes user_id, device_id
+   * and any user properties which are `set`, `unset` or `clearAll`ed via a call
+   * to `identify()`.
+   *
+   * Note: Non-idempotent identify operations `setOnce`, `add`, `append`, and
+   * `prepend` are not counted towards the user identity changing.
+   */
+  automaticFetchOnAmplitudeIdentityChange?: boolean;
+
+  /**
    * Name of the amplitude instance to provide user info.
+   *
+   * @deprecated Use {@link initializeWithAmplitudeAnalytics} initializer in tandem with the {@link instanceName} config
    */
   amplitudeUserProviderInstanceName?: string;
 
   /**
    * Name of the amplitude instance to provide analytics tracking.
+   *
+   * @deprecated Use {@link initializeWithAmplitudeAnalytics} initializer in tandem with the {@link instanceName} config
    */
   amplitudeAnalyticsProviderInstanceName?: string;
 }
 
 export interface ExperimentReactNativeClientModule {
   initialize(apiKey: string, config?: ExperimentConfig): Promise<boolean>;
+  initializeWithAmplitudeAnalytics(
+    apiKey: string,
+    config?: ExperimentConfig
+  ): Promise<boolean>;
   fetch(user?: ExperimentUser): Promise<boolean>;
   setUser(user: ExperimentUser): Promise<boolean>;
   variant(key: string): Promise<Variant>;
   variantWithFallback(key: string, fallback: Variant): Promise<Variant>;
   all(): Promise<Variants>;
+  exposure(key: string): Promise<boolean>;
   /**
-   * @deprecated use config.amplitudeUserProviderInstanceName
+   * @deprecated use {@link initializeWithAmplitudeAnalytics} to integrate with the amplitude analytics sdk.
    */
   setAmplitudeUserProvider(amplitudeInstanceName?: string): Promise<boolean>;
 }
