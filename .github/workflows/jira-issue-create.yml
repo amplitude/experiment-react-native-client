@@ -25,11 +25,11 @@ jobs:
           project: ${{ secrets.JIRA_PROJECT }}
           issuetype: Task
           summary: |
-            [SDK - experiment-react-native-server] ${{ github.event.issue.title }}
+            [SDK - experiment-react-native-client] ${{ github.event.issue.title }}
           description: |
             ${{ github.event.issue.html_url }}
           fields: '{
-            "labels": ["experiment-react-native-server"]
+            "labels": ["experiment-react-native-client"]
           }'
 
       - name: Log created issue
