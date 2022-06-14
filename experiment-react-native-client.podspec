@@ -16,6 +16,5 @@ Pod::Spec.new do |s|
   s.source_files = "ios/**/*.{h,m,mm,swift}"
 
   s.dependency "React-Core"
-  s.dependency "Amplitude"
-  s.dependency "AmplitudeExperiment", "~> 1.7.1"
+
 end

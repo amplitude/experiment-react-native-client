@@ -9,11 +9,14 @@
     "start": "react-native start"
   },
   "dependencies": {
-    "@amplitude/react-native": "2.8.0",
     "react": "16.13.1",
-    "react-native": "0.63.3"
+    "react-native": "0.63.4",
+    "@types/react": "^16.9.19",
+    "@types/react-native": "0.67.8",
+    "@react-native-community/async-storage": "^1.12.1"
   },
   "devDependencies": {
+    "jetifier": "^2.0.0",
     "@babel/core": "^7.12.10",
     "@babel/runtime": "^7.12.5",
     "babel-plugin-module-resolver": "^4.0.0",
