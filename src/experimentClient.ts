@@ -120,14 +120,14 @@ export class ExperimentClient implements Client {
    * Access the variant from {@link Source}, falling back  on the given
    * fallback, then the configured fallbackVariant.
    *
-   * If an {@link ExperimentAnalyticsProvider} is configured and trackExposure is
-   * true, this function will call the provider with an {@link ExposureEvent}.
+   * If an {@link ExposureTrackingProvider} is configured and trackExposure is
+   * true, this function will call the provider with an {@link Exposure}.
    * The exposure event does not count towards your event volume within Amplitude.
    *
    * @param key The key to get the variant for.
    * @param fallback The highest priority fallback.
    * @see ExperimentConfig
-   * @see ExperimentAnalyticsProvider
+   * @see ExposureTrackingProvider
    */
   public variant(key: string, fallback?: string | Variant): Variant {
     if (!this.apiKey) {
@@ -145,7 +145,7 @@ export class ExperimentClient implements Client {
    * Track an exposure event for the variant associated with the flag/experiment
    * {@link key}.
    *
-   * This method requires that an {@link ExperimentAnalyticsProvider} be
+   * This method requires that an {@link ExposureTrackingProvider} be
    * configured when this client is initialized, either manually, or through the
    * Amplitude Analytics SDK integration from set up using
    * {@link Experiment.initializeWithAmplitudeAnalytics}.

@@ -1,6 +1,6 @@
 import { AnalyticsConnector } from '@amplitude/analytics-connector';
-import { ConnectorExposureTrackingProvider } from 'src/integration/connector';
-import { HttpClient, SimpleResponse } from 'src/types/transport';
+import { ConnectorExposureTrackingProvider } from '../src/integration/connector';
+import { HttpClient, SimpleResponse } from '../src/types/transport';
 
 import { ExperimentClient } from '../src/experimentClient';
 import { ExperimentUserProvider } from '../src/types/provider';
@@ -9,6 +9,7 @@ import { ExperimentUser } from '../src/types/user';
 import { Variant, Variants } from '../src/types/variant';
 import { randomString } from '../src/util/randomstring';
 import AsyncStorage from '@react-native-community/async-storage';
+import { ExposureTrackingProvider } from '../src/types/exposure';
 
 const delay = (ms: number) => new Promise((res) => setTimeout(res, ms));
 
@@ -25,6 +26,10 @@ const testUser: ExperimentUser = { user_id: 'test_user' };
 const serverKey = 'sdk-ci-test';
 const serverVariant: Variant = { value: 'on', payload: 'payload' };
 const serverOffVariant: Variant = { value: 'off' };
+
+const serverResponseBody = JSON.stringify({
+  [`${serverKey}`]: { key: 'on', payload: 'payload' },
+});
 
 const initialKey = 'initial-key';
 const initialVariant: Variant = { value: 'initial' };
@@ -43,11 +48,37 @@ beforeEach(async () => {
   await AsyncStorage.clear();
 });
 
+class TestHttpClient implements HttpClient {
+  private readonly response: SimpleResponse;
+  constructor(
+    response: SimpleResponse = { status: 200, body: serverResponseBody }
+  ) {
+    this.response = response;
+  }
+  async request(
+    _requestUrl: string,
+    _method: string,
+    _headers: Record<string, string>,
+    _data: string,
+    timeoutMillis?: number
+  ): Promise<SimpleResponse> {
+    if (timeoutMillis === 1) {
+      await delay(timeoutMillis);
+      return Promise.reject(
+        new Error('Request timeout after ' + timeoutMillis + ' milliseconds')
+      );
+    }
+    return Promise.resolve(this.response as SimpleResponse);
+  }
+}
+
 /**
  * Basic test that fetching variants for a user succeeds.
  */
 test('ExperimentClient.fetch, success', async () => {
-  const client = new ExperimentClient(API_KEY, {});
+  const client = new ExperimentClient(API_KEY, {
+    httpClient: new TestHttpClient(),
+  });
   await client.fetch(testUser);
   const variant = client.variant(serverKey);
   expect(variant).toEqual(serverVariant);
@@ -61,6 +92,7 @@ test('ExperimentClient.fetch, no retries, timeout failure', async () => {
   const client = new ExperimentClient(API_KEY, {
     retryFetchOnFailure: false,
     fetchTimeoutMillis: 1,
+    httpClient: new TestHttpClient(),
   });
   await client.fetch(testUser);
   const variants = client.all();
@@ -75,6 +107,7 @@ test('ExperimentClient.fetch, with retries, retry success', async () => {
   const client = new ExperimentClient(API_KEY, {
     fallbackVariant: fallbackVariant,
     fetchTimeoutMillis: 1,
+    httpClient: new TestHttpClient(),
   });
   await client.fetch(testUser);
   let variant = client.variant(serverKey);
@@ -94,6 +127,7 @@ test('ExperimentClient.variant, no stored variants, explicit fallback returned',
   const client = new ExperimentClient(API_KEY, {
     fallbackVariant: fallbackVariant,
     initialVariants: initialVariants,
+    httpClient: new TestHttpClient(),
   });
 
   variant = client.variant(unknownKey, explicitFallbackVariant);
@@ -117,6 +151,7 @@ test('ExperimentClient.variant, unknown key returns default fallback', () => {
   const client = new ExperimentClient(API_KEY, {
     fallbackVariant: fallbackVariant,
     initialVariants: initialVariants,
+    httpClient: new TestHttpClient(),
   });
   const variant: Variant = client.variant(unknownKey);
   expect(variant).toEqual(fallbackVariant);
@@ -132,6 +167,7 @@ test('ExperimentClient.variant, initial variants fallback before fetch, no fallb
   const client = new ExperimentClient(API_KEY, {
     fallbackVariant: fallbackVariant,
     initialVariants: initialVariants,
+    httpClient: new TestHttpClient(),
   });
 
   variant = client.variant(initialKey);
@@ -156,6 +192,7 @@ test('ExperimentClient.variant, initial variants fallback before fetch, no fallb
 test('ExperimentClient.all, initial variants returned', async () => {
   const client = new ExperimentClient(API_KEY, {
     initialVariants: initialVariants,
+    httpClient: new TestHttpClient(),
   });
   const variants = client.all();
   expect(variants).toEqual(initialVariants);
@@ -169,6 +206,7 @@ test('ExperimentClient.fetch, initial variants source, prefer initial', async ()
   const client = new ExperimentClient(API_KEY, {
     source: Source.InitialVariants,
     initialVariants: initialVariants,
+    httpClient: new TestHttpClient(),
   });
   let variant = client.variant(serverKey);
   expect(variant).toEqual(serverOffVariant);
@@ -182,7 +220,9 @@ test('ExperimentClient.fetch, initial variants source, prefer initial', async ()
  * client, and calling setUser() after will overwrite the user.
  */
 test('ExperimentClient.fetch, sets user, setUser overrides', async () => {
-  const client = new ExperimentClient(API_KEY, {});
+  const client = new ExperimentClient(API_KEY, {
+    httpClient: new TestHttpClient(),
+  });
   await client.fetch(testUser);
   expect(client.getUser()).toEqual(testUser);
   const newUser = { user_id: 'new_test_user' };
@@ -195,9 +235,9 @@ test('ExperimentClient.fetch, sets user, setUser overrides', async () => {
  * explicit user argument is successful.
  */
 test('ExperimentClient.fetch, with user provider, success', async () => {
-  const client = new ExperimentClient(API_KEY, {}).setUserProvider(
-    new TestUserProvider()
-  );
+  const client = new ExperimentClient(API_KEY, {
+    httpClient: new TestHttpClient(),
+  }).setUserProvider(new TestUserProvider());
   await client.fetch();
   const variant = client.variant('sdk-ci-test');
   expect(variant).toEqual({ value: 'on', payload: 'payload' });
@@ -210,6 +250,7 @@ test('ExperimentClient.fetch, with user provider, success', async () => {
 test('ExperimentClient.fetch, with config user provider, success', async () => {
   const client = new ExperimentClient(API_KEY, {
     userProvider: new TestUserProvider(),
+    httpClient: new TestHttpClient(),
   });
   await client.fetch();
   const variant = client.variant('sdk-ci-test');
@@ -219,19 +260,11 @@ test('ExperimentClient.fetch, with config user provider, success', async () => {
 /**
  * Utility class for testing analytics provider & exposure tracking.
  */
-// class TestAnalyticsProvider
-//   implements ExposureTrackingProvider, ExperimentAnalyticsProvider
-// {
-//   track(): void {
-//     return;
-//   }
-//   setUserProperty(): void {
-//     return;
-//   }
-//   unsetUserProperty(): void {
-//     return;
-//   }
-// }
+class TestExposureTrackingProvider implements ExposureTrackingProvider {
+  track(): void {
+    return;
+  }
+}
 
 test('ExperimentClient.variant, with exposure tracking provider, track called once per key', async () => {
   const eventBridge = AnalyticsConnector.getInstance('1').eventBridge;
@@ -242,6 +275,7 @@ test('ExperimentClient.variant, with exposure tracking provider, track called on
   const logEventSpy = jest.spyOn(eventBridge, 'logEvent');
   const client = new ExperimentClient(API_KEY, {
     exposureTrackingProvider: exposureTrackingProvider,
+    httpClient: new TestHttpClient(),
   });
   await client.fetch(testUser);
   for (let i = 0; i < 10; i++) {
@@ -281,89 +315,49 @@ test('ExperimentClient.variant, with exposure tracking provider, track called on
  * Configure a client with an analytics provider which checks that a valid
  * exposure event is tracked when the client's variant function is called.
  */
-// test('ExperimentClient.variant, with analytics provider, exposure tracked, unset not sent', async () => {
-//   const analyticsProvider = new TestAnalyticsProvider();
-//   const spyTrack = jest.spyOn(analyticsProvider, 'track');
-//   const spySet = jest.spyOn(analyticsProvider, 'setUserProperty');
-//   const spyUnset = jest.spyOn(analyticsProvider, 'unsetUserProperty');
-//   const client = new ExperimentClient(API_KEY, {
-//     analyticsProvider: analyticsProvider,
-//   });
-//   await client.fetch(testUser);
-//   client.variant(serverKey);
-//
-//   expect(spySet).toBeCalledTimes(1);
-//   expect(spyTrack).toBeCalledTimes(1);
-//
-//   const expectedEvent = {
-//     name: '[Experiment] Exposure',
-//     properties: {
-//       key: serverKey,
-//       source: 'storage',
-//       variant: serverVariant.value,
-//     },
-//     user: expect.objectContaining({
-//       user_id: 'test_user',
-//     }),
-//     key: serverKey,
-//     variant: serverVariant,
-//     userProperties: {
-//       [`[Experiment] ${serverKey}`]: serverVariant.value,
-//     },
-//     userProperty: `[Experiment] ${serverKey}`,
-//   };
-//   expect(spySet).lastCalledWith(expectedEvent);
-//   expect(spyTrack).lastCalledWith(expectedEvent);
-//
-//   // verify call order
-//   const spySetOrder = spySet.mock.invocationCallOrder[0];
-//   const spyTrackOrder = spyTrack.mock.invocationCallOrder[0];
-//   expect(spySetOrder).toBeLessThan(spyTrackOrder);
-//
-//   expect(spyUnset).toBeCalledTimes(0);
-// });
+test('ExperimentClient.variant, with analytics provider, exposure tracked, unset not sent', async () => {
+  const exposureTrackingProvider = new TestExposureTrackingProvider();
+  const spyTrack = jest.spyOn(exposureTrackingProvider, 'track');
+  const client = new ExperimentClient(API_KEY, {
+    exposureTrackingProvider: exposureTrackingProvider,
+    httpClient: new TestHttpClient(),
+  });
+  await client.fetch(testUser);
+  client.variant(serverKey);
+
+  expect(spyTrack).toBeCalledTimes(1);
+
+  const expectedEvent = {
+    flag_key: serverKey,
+    variant: serverVariant.value,
+  };
+  expect(spyTrack).lastCalledWith(expectedEvent);
+});
 
 /**
- * Configure a client with an analytics provider which fails the test if called.
- * Tests that the analytics provider is not called with an exposure event when
- * the client exposes the user to a fallback/initial variant.
+ * Configure a client with an exposure tracking provider which fails the test if called.
+ * Tests that the exposure tracking provider is  called with an exposure event without a variant
+ * when the client exposes the user to a fallback/initial variant.
  */
-// test('ExperimentClient.variant, with analytics provider, exposure not tracked on fallback, unset sent', async () => {
-//   const analyticsProvider = new TestAnalyticsProvider();
-//   const spyTrack = jest.spyOn(analyticsProvider, 'track');
-//   const spySet = jest.spyOn(analyticsProvider, 'setUserProperty');
-//   const spyUnset = jest.spyOn(analyticsProvider, 'unsetUserProperty');
-//   const client = new ExperimentClient(API_KEY, {
-//     analyticsProvider: analyticsProvider,
-//   });
-//   client.variant(initialKey);
-//   client.variant(unknownKey);
-//
-//   expect(spyTrack).toHaveBeenCalledTimes(0);
-//   expect(spySet).toHaveBeenCalledTimes(0);
-//   expect(spyUnset).toHaveBeenCalledTimes(2);
-// });
+test('ExperimentClient.variant, with exposure tracking provider, exposure not tracked on fallback, unset sent', async () => {
+  const exposureTrackingProvider = new TestExposureTrackingProvider();
+  const spyTrack = jest.spyOn(exposureTrackingProvider, 'track');
+  const client = new ExperimentClient(API_KEY, {
+    exposureTrackingProvider: exposureTrackingProvider,
+  });
+  client.variant(initialKey);
+  client.variant(unknownKey);
 
-class TestHttpClient implements HttpClient {
-  public readonly status: number;
-  public readonly body: string;
-
-  constructor(status: number, body: string) {
-    this.status = status;
-    this.body = body;
-  }
-
-  async request(): Promise<SimpleResponse> {
-    return { status: this.status, body: this.body } as SimpleResponse;
-  }
-}
+  expect(spyTrack).toHaveBeenNthCalledWith(1, { flag_key: initialKey });
+  expect(spyTrack).toHaveBeenNthCalledWith(2, { flag_key: unknownKey });
+});
 
 test('configure httpClient, success', async () => {
   const client = new ExperimentClient(API_KEY, {
-    httpClient: new TestHttpClient(
-      200,
-      JSON.stringify({ flag: { key: 'key' } })
-    ),
+    httpClient: new TestHttpClient({
+      status: 200,
+      body: JSON.stringify({ flag: { key: 'key' } }),
+    }),
   });
   await client.fetch();
   const v = client.variant('flag');
