@@ -48,7 +48,7 @@ jobs:
         run: yarn install --frozen-lockfile
 
       - name: Build
-        run: npx lerna exec yarn
+        run: yarn
 
       - name: Test
         run: yarn test
@@ -61,14 +61,9 @@ jobs:
       - name: Release (Dry Run)
         if: ${{ github.event.inputs.dryRun == 'true'}}
         env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          yarn lerna version -m "chore(release): publish %s" \
-            --conventional-commits \
-            --no-push \
-            --no-git-tag-version \
-            --loglevel silly \
-            --yes
+          yarn release --dry-run
 
       - name: Setup NPM Token
         if: ${{ github.event.inputs.dryRun == 'false'}}
@@ -79,11 +74,6 @@ jobs:
       - name: Release
         if: ${{ github.event.inputs.dryRun == 'false'}}
         env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          yarn lerna version -m "chore(release): publish %s" \
-            --conventional-commits \
-            --create-release github \
-            --loglevel silly \
-            --yes
-          yarn lerna publish from-git --yes --loglevel silly
+          yarn release

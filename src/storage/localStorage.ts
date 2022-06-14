@@ -48,8 +48,10 @@ export class LocalStorage implements Storage {
         } else if (typeof value === 'object') {
           // new format
           newMap[key] = {
-            value: value['value'],
-            payload: value['payload'],
+            // @ts-ignore
+            value: value.value,
+            // @ts-ignore
+            payload: value.payload,
           };
         }
       }

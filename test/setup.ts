@@ -10,6 +10,7 @@ jest.mock('@react-native-community/async-storage', () => mockAsyncStorage);
 /*
  * Mock navigator to avoid undefined access in analytics-connector
  */
+// eslint-disable-next-line dot-notation
 global['navigator'] = {};
 
 /*
