@@ -8,7 +8,7 @@ import { Source } from '../src/types/source';
 import { ExperimentUser } from '../src/types/user';
 import { Variant, Variants } from '../src/types/variant';
 import { randomString } from '../src/util/randomstring';
-import AsyncStorage from '@react-native-community/async-storage';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { ExposureTrackingProvider } from '../src/types/exposure';
 
 const delay = (ms: number) => new Promise((res) => setTimeout(res, ms));
