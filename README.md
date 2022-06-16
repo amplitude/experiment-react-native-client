@@ -1,25 +1,8 @@
 # experiment-react-native-client
 
-Official Amplitude Experiment React Native Client
+Official Amplitude Experiment React Native Client SDK.
 
-## Installation
-
-```sh
-npm install @amplitude/experiment-react-native-client
-```
-
-## Usage
-
-```js
-import { Experiment } from "@amplitude/experiment-react-native-client";
-
-// ...
-
-await Experiment.initialize('API-Key');
-await Experiment.fetch({user_id: 'user_id'});
-const variant = await Experiment.variant('react-native');
-console.log(variant.value);
-```
+Visit our [developer documentation](https://www.docs.developers.amplitude.com/experiment/sdks/react-native-sdk/) for usage.
 
 ## Contributing
 
