@@ -4,7 +4,6 @@ import { NativeModules } from 'react-native';
 /*
  * Mock AsyncStorage
  */
-// eslint-disable-next-line no-undef
 jest.mock('@react-native-async-storage/async-storage', () => mockAsyncStorage);
 
 /*
