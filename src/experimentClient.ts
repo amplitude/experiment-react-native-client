@@ -3,7 +3,7 @@
  * @module experiment-js-client
  */
 
-import { version as PACKAGE_VERSION } from '../package.json';
+import { version as PACKAGE_VERSION } from './gen/version';
 
 import { ExperimentConfig, Defaults } from './config';
 import { ConnectorUserProvider } from './integration/connector';
