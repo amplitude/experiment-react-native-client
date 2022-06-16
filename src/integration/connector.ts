@@ -1,8 +1,8 @@
 import { EventBridge, IdentityStore } from '@amplitude/analytics-connector';
 
 import { Exposure, ExposureTrackingProvider } from '../types/exposure';
-import { ExperimentUserProvider } from '../types/provider';
-import { ExperimentUser } from '../types/user';
+import { ExperimentUser, ExperimentUserProvider } from '../types/user';
+
 import { safeGlobal } from '../util/global';
 
 type UserProperties = Record<

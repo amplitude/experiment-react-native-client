@@ -1,6 +1,6 @@
 import { AnalyticsConnector } from '@amplitude/analytics-connector';
 
-import { Defaults, ExperimentConfig } from './config';
+import { Defaults, ExperimentConfig } from './types/config';
 import { ExperimentClient } from './experimentClient';
 import {
   ConnectorExposureTrackingProvider,

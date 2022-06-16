@@ -1,5 +1,4 @@
-import { ExperimentUserProvider } from './provider';
-import { ExperimentUser } from './user';
+import { ExperimentUser, ExperimentUserProvider } from './user';
 import { Variant, Variants } from './variant';
 
 /**

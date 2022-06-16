@@ -1,9 +1,9 @@
-import { FetchHttpClient } from './transport/http';
-import { ExposureTrackingProvider } from './types/exposure';
-import { ExperimentUserProvider } from './types/provider';
-import { Source } from './types/source';
-import { HttpClient } from './types/transport';
-import { Variant, Variants } from './types/variant';
+import { FetchHttpClient } from '../transport/http';
+import { ExposureTrackingProvider } from './exposure';
+import { ExperimentUserProvider } from './user';
+import { Source } from './source';
+import { HttpClient } from './transport';
+import { Variant, Variants } from './variant';
 
 /**
  * @category Configuration

@@ -1,5 +1,4 @@
-import { ExperimentUserProvider } from '../types/provider';
-import { ExperimentUser } from '../types/user';
+import { ExperimentUser, ExperimentUserProvider } from '../types/user';
 
 import { NativeModules } from 'react-native';
 

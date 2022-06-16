@@ -3,9 +3,8 @@ import { ConnectorExposureTrackingProvider } from '../src/integration/connector'
 import { HttpClient, SimpleResponse } from '../src/types/transport';
 
 import { ExperimentClient } from '../src/experimentClient';
-import { ExperimentUserProvider } from '../src/types/provider';
 import { Source } from '../src/types/source';
-import { ExperimentUser } from '../src/types/user';
+import { ExperimentUser, ExperimentUserProvider } from '../src/types/user';
 import { Variant, Variants } from '../src/types/variant';
 import { randomString } from '../src/util/randomstring';
 import AsyncStorage from '@react-native-async-storage/async-storage';

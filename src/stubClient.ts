@@ -1,7 +1,6 @@
-import { Defaults } from './config';
+import { Defaults } from './types/config';
 import { Client } from './types/client';
-import { ExperimentUserProvider } from './types/provider';
-import { ExperimentUser } from './types/user';
+import { ExperimentUser, ExperimentUserProvider } from './types/user';
 import { Variant, Variants } from './types/variant';
 
 /**

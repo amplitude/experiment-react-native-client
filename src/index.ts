@@ -1,10 +1,9 @@
-export { ExperimentConfig } from './config';
+export * from './types/config';
 export { Experiment } from './factory';
 export { StubExperimentClient } from './stubClient';
 export { ExperimentClient } from './experimentClient';
-export { Client } from './types/client';
-export { ExperimentUserProvider } from './types/provider';
+export * from './types/client';
 export { Source } from './types/source';
-export { ExperimentUser } from './types/user';
-export { Variant, Variants } from './types/variant';
-export { Exposure, ExposureTrackingProvider } from './types/exposure';
+export * from './types/user';
+export * from './types/variant';
+export * from './types/exposure';

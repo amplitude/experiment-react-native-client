@@ -5,16 +5,15 @@
 
 import { version as PACKAGE_VERSION } from './gen/version';
 
-import { ExperimentConfig, Defaults } from './config';
+import { ExperimentConfig, Defaults } from './types/config';
 import { ConnectorUserProvider } from './integration/connector';
 import { LocalStorage } from './storage/localStorage';
 import { Client } from './types/client';
 import { ExposureTrackingProvider } from './types/exposure';
-import { ExperimentUserProvider } from './types/provider';
 import { isFallback, Source, VariantSource } from './types/source';
 import { Storage } from './types/storage';
 import { HttpClient, SimpleResponse } from './types/transport';
-import { ExperimentUser } from './types/user';
+import { ExperimentUser, ExperimentUserProvider } from './types/user';
 import { Variant, Variants } from './types/variant';
 import { isNullOrUndefined } from './util';
 import { Backoff } from './util/backoff';
