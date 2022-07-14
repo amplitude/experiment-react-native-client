@@ -140,7 +140,8 @@
   },
   "eslintIgnore": [
     "node_modules/",
-    "lib/"
+    "lib/",
+    "__mocks__/setup.ts"
   ],
   "prettier": {
     "quoteProps": "consistent",
