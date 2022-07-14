@@ -1,4 +1,5 @@
 import Foundation
+import React
 
 @objc(ExperimentReactNativeClient)
 class ExperimentReactNativeClient: NSObject {

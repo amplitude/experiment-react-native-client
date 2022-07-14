@@ -1,4 +1,3 @@
-
 {
   "extends": "./tsconfig",
   "exclude": ["example", "__tests__", "__mocks__"],

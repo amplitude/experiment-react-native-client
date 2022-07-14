@@ -23,7 +23,7 @@ import Foundation
 
     private static func getOs() -> String {
         let systemVersion = ProcessInfo.processInfo.operatingSystemVersion
-        let os = "ios \(systemVersion.majorVersion).\(systemVersion.minorVersion).\(systemVersion.patchVersion)."
+        let os = "ios \(systemVersion.majorVersion).\(systemVersion.minorVersion).\(systemVersion.patchVersion)"
         return os
     }
 
