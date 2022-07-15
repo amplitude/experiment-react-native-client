@@ -5,6 +5,7 @@ import {
   AnalyticsConnector,
   ApplicationContext,
 } from '@amplitude/analytics-connector';
+import { isNative } from '../util/platform';
 
 export interface ExperimentReactNativeClientModule {
   getApplicationContext(): Promise<Record<string, string>>;
@@ -28,7 +29,7 @@ export class DefaultUserProvider implements ExperimentUserProvider {
 
   async getUser(): Promise<ExperimentUser> {
     let context;
-    if (this.nativeModule) {
+    if (isNative()) {
       context = await this.nativeModule?.getApplicationContext();
     } else {
       context = this.applicationContext;
