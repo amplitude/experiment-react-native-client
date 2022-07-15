@@ -1,6 +1,6 @@
 /**
  * @packageDocumentation
- * @module experiment-js-client
+ * @module experiment-react-native-client
  */
 
 import { version as PACKAGE_VERSION } from './gen/version';
@@ -412,7 +412,7 @@ export class ExperimentClient implements Client {
       ...providedUser?.user_properties,
     };
     return {
-      library: `experiment-js-client/${PACKAGE_VERSION}`,
+      library: `experiment-react-native-client/${PACKAGE_VERSION}`,
       ...providedUser,
       ...user,
       user_properties: mergedUserProperties,
