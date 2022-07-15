@@ -20,16 +20,16 @@ class ExperimentReactNativeClientModule(private val reactContext: ReactApplicati
     }
 
     @ReactMethod
-    private fun getApplicationContext(promise: Promise): ReadableMap {
-        return promise.resolve(WritableNativeMap().apply {
-          putString("version", androidContextProvider.versionName)
-          putString("platform", androidContextProvider.osName)
-          putString("language", androidContextProvider.language)
-          putString("os", androidContextProvider.osName + " "  + androidContextProvider.osVersion)
-          putString("device_brand", androidContextProvider.brand)
-          putString("device_manufacturer", androidContextProvider.manufacturer)
-          putString("device_model", androidContextProvider.model)
-          putString("carrier", androidContextProvider.carrier)
+    private fun getApplicationContext(promise: Promise) {
+        promise.resolve(WritableNativeMap().apply {
+            putString("version", androidContextProvider.versionName)
+            putString("platform", androidContextProvider.osName)
+            putString("language", androidContextProvider.language)
+            putString("os", androidContextProvider.osName + " "  + androidContextProvider.osVersion)
+            putString("device_brand", androidContextProvider.brand)
+            putString("device_manufacturer", androidContextProvider.manufacturer)
+            putString("device_model", androidContextProvider.model)
+            putString("carrier", androidContextProvider.carrier)
         })
     }
 }
