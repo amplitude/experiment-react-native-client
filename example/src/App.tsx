@@ -1,12 +1,13 @@
 import * as React from 'react';
 
 import { StyleSheet, View, Text } from 'react-native';
-import { Amplitude } from '@amplitude/react-native';
 import {
   Experiment,
   Variant,
   Variants,
 } from '@amplitude/experiment-react-native-client';
+
+import { init, track } from '@amplitude/analytics-react-native';
 
 export default function App() {
   const [variant, setVariant] = React.useState<Variant | undefined>();
@@ -22,25 +23,23 @@ export default function App() {
   const [allVariants, setAllVariants] = React.useState<Variants | undefined>();
   React.useEffect(() => {
     (async () => {
-      if (Amplitude) {
-        await Amplitude.getInstance().init('a6dd847b9d2f03c816d4f3f8458cdc1d');
-        await Amplitude.getInstance().setUserId('brian.giori@amplitude.com');
-      }
+      await init('a6dd847b9d2f03c816d4f3f8458cdc1d', 'briang123').promise;
+      await track('test');
       if (Experiment) {
-        await Experiment.initializeWithAmplitudeAnalytics(
+        const experiment = Experiment.initializeWithAmplitudeAnalytics(
           'client-IAxMYws9vVQESrrK88aTcToyqMxiiJoR',
           {
             debug: true,
             fallbackVariant: { value: 'defaultFallback' },
           }
         );
-        await Experiment.fetch({
+        await experiment.fetch({
           user_properties: { test: 'true', test2: 4.3 },
         });
-        setVariant(await Experiment.variant('react-native'));
-        setFallbackResult(await Experiment.variant('flag-does-not-exist'));
+        setVariant(experiment.variant('react-native'));
+        setFallbackResult(experiment.variant('flag-does-not-exist'));
         setVariantFallbackResult(
-          await Experiment.variant('flag-does-not-exist', {
+          experiment.variant('flag-does-not-exist', {
             value: 'fallback',
             payload: {
               list: [1, 2],
@@ -52,8 +51,8 @@ export default function App() {
             },
           })
         );
-        setPayloadVariant(await Experiment.variant('android-demo'));
-        setAllVariants(await Experiment.all());
+        setPayloadVariant(experiment.variant('android-demo'));
+        setAllVariants(experiment.all());
       }
     })();
   }, []);

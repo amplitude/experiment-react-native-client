@@ -1,17 +1,18 @@
 buildscript {
-    if (project == rootProject) {
-        repositories {
-            google()
-            jcenter()
-        }
+    ext.kotlinVersion = "1.5.30"
+    repositories {
+        google()
+        jcenter()
+    }
 
-        dependencies {
-            classpath 'com.android.tools.build:gradle:3.5.3'
-        }
+    dependencies {
+        classpath 'com.android.tools.build:gradle:3.5.3'
+        classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlinVersion"
     }
 }
 
 apply plugin: 'com.android.library'
+apply plugin: 'kotlin-android'
 
 def safeExtGet(prop, fallback) {
     rootProject.ext.has(prop) ? rootProject.ext.get(prop) : fallback
@@ -56,6 +57,4 @@ repositories {
 dependencies {
     //noinspection GradleDynamicVersion
     implementation "com.facebook.react:react-native:+"  // From node_modules
-    implementation 'com.amplitude:experiment-android-client:1.6.1'
-    implementation 'com.amplitude:android-sdk:2.36.1'
 }
