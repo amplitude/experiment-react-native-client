@@ -1,5 +1,6 @@
 package com.amplitude.experiment.reactnative
 
+import com.facebook.react.bridge.Promise
 import com.facebook.react.module.annotations.ReactModule
 import com.facebook.react.bridge.ReactApplicationContext
 import com.facebook.react.bridge.ReactContextBaseJavaModule
@@ -19,8 +20,8 @@ class ExperimentReactNativeClientModule(private val reactContext: ReactApplicati
     }
 
     @ReactMethod
-    private fun getApplicationContext(): ReadableMap {
-        return WritableNativeMap().apply {
+    private fun getApplicationContext(promise: Promise): ReadableMap {
+        return promise.resolve(WritableNativeMap().apply {
           putString("version", androidContextProvider.versionName)
           putString("platform", androidContextProvider.osName)
           putString("language", androidContextProvider.language)
@@ -29,6 +30,6 @@ class ExperimentReactNativeClientModule(private val reactContext: ReactApplicati
           putString("device_manufacturer", androidContextProvider.manufacturer)
           putString("device_model", androidContextProvider.model)
           putString("carrier", androidContextProvider.carrier)
-        }
+        })
     }
 }
