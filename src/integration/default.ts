@@ -1,6 +1,10 @@
 import { ExperimentUser, ExperimentUserProvider } from '../types/user';
 
 import { NativeModules } from 'react-native';
+import {
+  AnalyticsConnector,
+  ApplicationContext,
+} from '@amplitude/analytics-connector';
 
 export interface ExperimentReactNativeClientModule {
   getApplicationContext(): Promise<Record<string, string>>;
@@ -12,16 +16,26 @@ export class DefaultUserProvider implements ExperimentUserProvider {
     | ExperimentReactNativeClientModule
     | undefined
     | null = NativeModules.ExperimentReactNativeClient;
+  private readonly applicationContext: ApplicationContext;
 
   constructor(baseProvider: ExperimentUserProvider = null) {
     this.baseProvider = baseProvider;
+    this.applicationContext =
+      AnalyticsConnector.getInstance(
+        'context'
+      ).applicationContextProvider.getApplicationContext();
   }
 
   async getUser(): Promise<ExperimentUser> {
-    const nativeContext = await this.nativeModule?.getApplicationContext();
+    let context;
+    if (this.nativeModule) {
+      context = await this.nativeModule?.getApplicationContext();
+    } else {
+      context = this.applicationContext;
+    }
     const baseUser = await this.baseProvider?.getUser();
     return {
-      ...nativeContext,
+      ...context,
       ...baseUser,
     };
   }
