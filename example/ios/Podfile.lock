@@ -4,7 +4,7 @@ PODS:
   - boost-for-react-native (1.63.0)
   - CocoaAsyncSocket (7.6.5)
   - DoubleConversion (1.1.6)
-  - experiment-react-native-client (1.0.0-beta.7):
+  - experiment-react-native-client (1.0.0-beta.8):
     - React-Core
   - FBLazyVector (0.63.4)
   - FBReactNativeSpec (0.63.4):
@@ -447,7 +447,7 @@ SPEC CHECKSUMS:
   boost-for-react-native: 39c7adb57c4e60d6c5479dd8623128eb5b3f0f2c
   CocoaAsyncSocket: 065fd1e645c7abab64f7a6a2007a48038fdc6a99
   DoubleConversion: cde416483dac037923206447da6e1454df403714
-  experiment-react-native-client: 3dc77d58597d9febf050edbf3ec9099ba15ab3f5
+  experiment-react-native-client: 2dfc90d9f2c8217fb280a8fd2900d7e1966c7c9e
   FBLazyVector: 3bb422f41b18121b71783a905c10e58606f7dc3e
   FBReactNativeSpec: f2c97f2529dd79c083355182cc158c9f98f4bd6e
   Flipper: 1bd2db48dcc31e4b167b9a33ec1df01c2ded4893
