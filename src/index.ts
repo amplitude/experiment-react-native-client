@@ -44,7 +44,13 @@ export const Experiment = {
         ...user,
       };
     }
-    return ExperimentReactNativeClient.fetch(user);
+    try {
+      await ExperimentReactNativeClient.fetch(user);
+      return true;
+    } catch (e) {
+      console.info('[Experiment] Fetch failed:', e);
+      return false;
+    }
   },
 
   setUser: async (user: ExperimentUser): Promise<boolean> => {
