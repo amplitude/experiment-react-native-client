@@ -4,7 +4,7 @@ PODS:
   - amplitude-react-native (2.8.0):
     - Amplitude (= 8.8.0)
     - React-Core
-  - AmplitudeExperiment (1.7.1):
+  - AmplitudeExperiment (1.7.2):
     - AnalyticsConnector (~> 1.0.0)
   - AnalyticsConnector (1.0.0)
   - boost-for-react-native (1.63.0)
@@ -12,7 +12,7 @@ PODS:
   - DoubleConversion (1.1.6)
   - experiment-react-native-client (0.7.2):
     - Amplitude
-    - AmplitudeExperiment (~> 1.7.1)
+    - AmplitudeExperiment (~> 1.7.2)
     - React-Core
   - FBLazyVector (0.63.3)
   - FBReactNativeSpec (0.63.3):
@@ -451,12 +451,12 @@ EXTERNAL SOURCES:
 SPEC CHECKSUMS:
   Amplitude: 710116f3539c225e86fb70a8abdcd20015683132
   amplitude-react-native: acb8a0659b3f713185457f18642a8feb77652b4c
-  AmplitudeExperiment: 25f2a8a7dc0acb60b5f1a4159572d14e20b816dc
+  AmplitudeExperiment: fe0deb8264480309f3136c0e117c183ff3ba29f6
   AnalyticsConnector: 4c386d5972ac9da86e22d668564dbbac97558754
   boost-for-react-native: 39c7adb57c4e60d6c5479dd8623128eb5b3f0f2c
   CocoaAsyncSocket: 065fd1e645c7abab64f7a6a2007a48038fdc6a99
   DoubleConversion: cde416483dac037923206447da6e1454df403714
-  experiment-react-native-client: 4ce67e8cb7d63ee4673f16023563dda75ec08ba9
+  experiment-react-native-client: 2db5b239719186e64ef5135d06b001a7b7b95a03
   FBLazyVector: 878b59e31113e289e275165efbe4b54fa614d43d
   FBReactNativeSpec: 7da9338acfb98d4ef9e5536805a0704572d33c2f
   Flipper: 1bd2db48dcc31e4b167b9a33ec1df01c2ded4893
