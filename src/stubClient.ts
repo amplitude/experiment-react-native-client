@@ -35,5 +35,7 @@ export class StubExperimentClient implements Client {
     return {};
   }
 
+  public clear() {}
+
   public exposure(_key: string): void {}
 }
