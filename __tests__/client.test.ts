@@ -362,3 +362,16 @@ test('configure httpClient, success', async () => {
   const v = client.variant('flag');
   expect(v).toEqual({ value: 'key' });
 });
+
+test('ExperimentClient.clear, clear all variants in the cache and storage', async () => {
+  const client = new ExperimentClient(API_KEY, {
+    httpClient: new TestHttpClient(),
+  });
+  await client.fetch(testUser);
+  const variant = client.variant(serverKey);
+  expect(variant).toEqual(serverVariant);
+
+  client.clear();
+  var clearedVariants = client.all();
+  expect(clearedVariants).toEqual({});
+});
