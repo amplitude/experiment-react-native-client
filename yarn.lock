@@ -2,17 +2,12 @@
 # yarn lockfile v1
 
 
-"@amplitude/analytics-connector@1.4.3":
-  version "1.4.3"
-  resolved "https://registry.yarnpkg.com/@amplitude/analytics-connector/-/analytics-connector-1.4.3.tgz#cb9098cb8adfbd39b2c71ad71a7c758504a745a7"
-  integrity sha512-Ghu1UJn55Rn9eglF+ED7yOGXaeX3KY2qkQi9W9yqC02ItPvKfrybeVndweI1XtsiW0LvRpdA3uQEjuZEGunyLw==
+"@amplitude/analytics-connector@^1.4.3":
+  version "1.4.6"
+  resolved "https://registry.yarnpkg.com/@amplitude/analytics-connector/-/analytics-connector-1.4.6.tgz#60a66eaf0bcdcd17db4f414ff340c69e63116a72"
+  integrity sha512-6jD2pOosRD4y8DT8StUCz7yTd5ZDkdOU9/AWnlWKM5qk90Mz7sdZrdZ9H7sA/L3yOJEpQOYZgQplQdWWUzyWug==
   dependencies:
     "@amplitude/ua-parser-js" "0.7.31"
-
-"@amplitude/experiment-react-native-client@^0.7.2":
-  version "0.7.2"
-  resolved "https://registry.yarnpkg.com/@amplitude/experiment-react-native-client/-/experiment-react-native-client-0.7.2.tgz#9f1c4e5a548df72b92755e7a15978e559c92741a"
-  integrity sha512-WXUhWpdrvl3KpCyxsHsECSrZmhV3tkYdWF4mxig7oRbXzWIKLsXdbdarPLpFnRp7E3rWbJl3yvuAaSw/LV1U9w==
 
 "@amplitude/ua-parser-js@0.7.31":
   version "0.7.31"
@@ -1725,10 +1720,10 @@
   dependencies:
     "@octokit/openapi-types" "^11.2.0"
 
-"@react-native-async-storage/async-storage@1.17.6":
-  version "1.17.6"
-  resolved "https://registry.yarnpkg.com/@react-native-async-storage/async-storage/-/async-storage-1.17.6.tgz#ddb3520d051f71698c8a0e79e8959a7bf6d9f43b"
-  integrity sha512-XXnoheQI3vQTQmjphdXNLTmtiKZeRqvI8kPQ25X5Eae7nZjdYEEGN+0z8N2qyelbUIQwKgmW0aagJk56q7DyNg==
+"@react-native-async-storage/async-storage@^1.17.6":
+  version "1.18.1"
+  resolved "https://registry.yarnpkg.com/@react-native-async-storage/async-storage/-/async-storage-1.18.1.tgz#b1aea4f07fb1dba3325b857b770671517ddab221"
+  integrity sha512-70aFW8fVCKl+oA1AKPFDpE6s4t9pulj2QeLX+MabEmzfT3urd/3cckv45WJvtocdoIH/oXA3Y+YcCRJCcNa8mA==
   dependencies:
     merge-options "^3.0.4"
 
@@ -9414,7 +9409,7 @@ unc-path-regex@^0.1.2:
   resolved "https://registry.yarnpkg.com/unc-path-regex/-/unc-path-regex-0.1.2.tgz#e73dd3d7b0d7c5ed86fbac6b0ae7d8c6a69d50fa"
   integrity sha512-eXL4nmJT7oCpkZsHZUOJo8hcX3GbsiDOa0Qu9F646fi8dT3XuSVopVqAcEiVzSKKH7UoDti23wNX3qGFxcW5Qg==
 
-unfetch@4.2.0:
+unfetch@^4.2.0:
   version "4.2.0"
   resolved "https://registry.yarnpkg.com/unfetch/-/unfetch-4.2.0.tgz#7e21b0ef7d363d8d9af0fb929a5555f6ef97a3be"
   integrity sha512-F9p7yYCn6cIW9El1zi0HI6vqpeIvBsr3dSuRO6Xuppb1u5rXpCPmMvLSyECLhybr9isec8Ohl0hPekMVrEinDA==
