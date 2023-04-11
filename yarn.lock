@@ -9,11 +9,6 @@
   dependencies:
     "@amplitude/ua-parser-js" "0.7.31"
 
-"@amplitude/experiment-react-native-client@^0.7.2":
-  version "0.7.2"
-  resolved "https://registry.yarnpkg.com/@amplitude/experiment-react-native-client/-/experiment-react-native-client-0.7.2.tgz#9f1c4e5a548df72b92755e7a15978e559c92741a"
-  integrity sha512-WXUhWpdrvl3KpCyxsHsECSrZmhV3tkYdWF4mxig7oRbXzWIKLsXdbdarPLpFnRp7E3rWbJl3yvuAaSw/LV1U9w==
-
 "@amplitude/ua-parser-js@0.7.31":
   version "0.7.31"
   resolved "https://registry.yarnpkg.com/@amplitude/ua-parser-js/-/ua-parser-js-0.7.31.tgz#749bf7cb633cfcc7ff3c10805bad7c5f6fbdbc61"
