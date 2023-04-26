@@ -98,6 +98,22 @@ export type ExperimentUser = {
       | boolean
       | Array<string | number | boolean>;
   };
+
+  groups?: {
+    [groupType: string]: string[];
+  };
+
+  group_properties?: {
+    [groupType: string]: {
+      [groupName: string]: {
+        [propertyName: string]:
+          | string
+          | number
+          | boolean
+          | Array<string | number | boolean>;
+      };
+    };
+  };
 };
 
 /**
