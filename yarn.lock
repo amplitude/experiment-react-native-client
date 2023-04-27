@@ -2,17 +2,17 @@
 # yarn lockfile v1
 
 
-"@amplitude/analytics-connector@^1.4.3":
-  version "1.4.6"
-  resolved "https://registry.yarnpkg.com/@amplitude/analytics-connector/-/analytics-connector-1.4.6.tgz#60a66eaf0bcdcd17db4f414ff340c69e63116a72"
-  integrity sha512-6jD2pOosRD4y8DT8StUCz7yTd5ZDkdOU9/AWnlWKM5qk90Mz7sdZrdZ9H7sA/L3yOJEpQOYZgQplQdWWUzyWug==
+"@amplitude/analytics-connector@^1.4.7":
+  version "1.4.7"
+  resolved "https://registry.yarnpkg.com/@amplitude/analytics-connector/-/analytics-connector-1.4.7.tgz#3a305dc5894d8c9d1833b327e35e3e9dea994db7"
+  integrity sha512-XjkFmVnJuPcRAQyPDs3LR3uam0jjDzBsT8ZABlWoV3iypRY7d+gs3ijDn2c4UU5XIjsR9GqzHCbZG3w7T+t6tQ==
   dependencies:
-    "@amplitude/ua-parser-js" "0.7.31"
+    "@amplitude/ua-parser-js" "^0.7.31"
 
-"@amplitude/ua-parser-js@0.7.31":
-  version "0.7.31"
-  resolved "https://registry.yarnpkg.com/@amplitude/ua-parser-js/-/ua-parser-js-0.7.31.tgz#749bf7cb633cfcc7ff3c10805bad7c5f6fbdbc61"
-  integrity sha512-+z8UGRaj13Pt5NDzOnkTBy49HE2CX64jeL0ArB86HAtilpnfkPB7oqkigN7Lf2LxscMg4QhFD7mmCfedh3rqTg==
+"@amplitude/ua-parser-js@^0.7.31":
+  version "0.7.33"
+  resolved "https://registry.yarnpkg.com/@amplitude/ua-parser-js/-/ua-parser-js-0.7.33.tgz#26441a0fb2e956a64e4ede50fb80b848179bb5db"
+  integrity sha512-wKEtVR4vXuPT9cVEIJkYWnlF++Gx3BdLatPBM+SZ1ztVIvnhdGBZR/mn9x/PzyrMcRlZmyi6L56I2J3doVBnjA==
 
 "@ampproject/remapping@^2.1.0":
   version "2.2.0"
