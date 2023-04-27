@@ -44,11 +44,7 @@ export class ExperimentClient implements Client {
 
   private user: ExperimentUser = null;
   private retriesBackoff: Backoff;
-
-  /**
-   * @deprecated
-   */
-  private userProvider: ExperimentUserProvider = null;
+  private readonly defaultUserProvider: DefaultUserProvider = null;
 
   private exposureTrackingProvider: ExposureTrackingProvider;
 
@@ -64,7 +60,9 @@ export class ExperimentClient implements Client {
   public constructor(apiKey: string, config: ExperimentConfig) {
     this.apiKey = apiKey;
     this.config = { ...Defaults, ...config };
-    this.userProvider = new DefaultUserProvider(this.config.userProvider);
+    this.defaultUserProvider = new DefaultUserProvider(
+      this.config.userProvider
+    );
     if (this.config.exposureTrackingProvider) {
       this.exposureTrackingProvider = new SessionExposureTrackingProvider(
         this.config.exposureTrackingProvider
@@ -223,7 +221,7 @@ export class ExperimentClient implements Client {
    * @deprecated use ExperimentConfig.userProvider instead
    */
   public getUserProvider(): ExperimentUserProvider {
-    return this.userProvider;
+    return this.defaultUserProvider;
   }
 
   /**
@@ -236,7 +234,7 @@ export class ExperimentClient implements Client {
    * @deprecated use ExperimentConfig.userProvider instead
    */
   public setUserProvider(userProvider: ExperimentUserProvider): Client {
-    this.userProvider = userProvider;
+    this.defaultUserProvider.baseProvider = userProvider;
     return this;
   }
 
@@ -414,7 +412,7 @@ export class ExperimentClient implements Client {
   }
 
   private async addContext(user: ExperimentUser): Promise<ExperimentUser> {
-    const providedUser = await this.userProvider?.getUser();
+    const providedUser = await this.defaultUserProvider?.getUser();
     const mergedUserProperties = {
       ...user?.user_properties,
       ...providedUser?.user_properties,
@@ -431,8 +429,9 @@ export class ExperimentClient implements Client {
     user: ExperimentUser,
     ms: number
   ): Promise<ExperimentUser> {
-    if (this.userProvider instanceof ConnectorUserProvider) {
-      await this.userProvider.identityReady(ms);
+    let baseProvider = this.defaultUserProvider.baseProvider;
+    if (baseProvider instanceof ConnectorUserProvider) {
+      await baseProvider.identityReady(ms);
     }
     return this.addContext(user);
   }

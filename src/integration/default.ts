@@ -12,7 +12,7 @@ export interface ExperimentReactNativeClientModule {
 }
 
 export class DefaultUserProvider implements ExperimentUserProvider {
-  private readonly baseProvider: ExperimentUserProvider | null;
+  public baseProvider: ExperimentUserProvider | null;
   private readonly nativeModule:
     | ExperimentReactNativeClientModule
     | undefined
