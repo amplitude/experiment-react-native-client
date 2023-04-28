@@ -45,22 +45,22 @@ jobs:
           git config --global user.name amplitude-sdk-bot
           git config --global user.email amplitude-sdk-bot@users.noreply.github.com
 
-      - name: Release (Dry Run)
-        if: ${{ github.event.inputs.dryRun == 'true'}}
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-          yarn release --dry-run
-
       - name: Setup NPM Token
         if: ${{ github.event.inputs.dryRun == 'false'}}
         env:
           NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
         run: echo //registry.npmjs.org/:_authToken=${NPM_TOKEN} > .npmrc
 
+      - name: Release (Dry Run)
+        if: ${{ github.event.inputs.dryRun == 'true'}}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          yarn release --dry-run --ci
+
       - name: Release
         if: ${{ github.event.inputs.dryRun == 'false'}}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          yarn release
+          yarn release --ci
