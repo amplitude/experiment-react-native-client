@@ -481,6 +481,7 @@ export class ExperimentClient implements Client {
       this.exposureTrackingProvider?.track({
         flag_key: key,
         variant: variant.value,
+        experiment_key: variant.expKey,
       });
     }
   }

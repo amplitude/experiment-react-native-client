@@ -10,8 +10,12 @@ export type Variant = {
   /**
    * The attached payload, if any.
    */
-
   payload?: any;
+
+  /**
+   * The experiment key. Used to distinguish two experiments associated with the same flag.
+   */
+  expKey?: string;
 };
 
 /**
