@@ -9,6 +9,7 @@ import { Variant, Variants } from '../src/types/variant';
 import { randomString } from '../src/util/randomstring';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { ExposureTrackingProvider } from '../src/types/exposure';
+import { Exposure } from '../lib/typescript';
 
 const delay = (ms: number) => new Promise((res) => setTimeout(res, ms));
 
@@ -374,4 +375,20 @@ test('ExperimentClient.clear, clear all variants in the cache and storage', asyn
   client.clear();
   var clearedVariants = client.all();
   expect(clearedVariants).toEqual({});
+});
+
+test('ExperimentClient.variant experiment key passed from variant to exposure', async () => {
+  let didTrack = false;
+  const client = new ExperimentClient(API_KEY, {
+    exposureTrackingProvider: {
+      track: (exposure: Exposure) => {
+        expect(exposure.experiment_key).toEqual('expKey');
+        didTrack = true;
+      },
+    },
+    source: Source.InitialVariants,
+    initialVariants: { flagKey: { value: 'value', expKey: 'expKey' } },
+  });
+  client.variant('flagKey');
+  expect(didTrack).toEqual(true);
 });
