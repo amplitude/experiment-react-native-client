@@ -6,7 +6,7 @@ import { Variant, Variants } from './variant';
  * @category Core Usage
  */
 export interface Client {
-  fetch(user?: ExperimentUser): Promise<Client>;
+  fetch(user?: ExperimentUser, options?: FetchOptions): Promise<Client>;
   variant(key: string, fallback?: string | Variant): Variant;
   all(): Variants;
   clear(): void;
@@ -23,3 +23,13 @@ export interface Client {
    */
   setUserProvider(userProvider: ExperimentUserProvider): Client;
 }
+
+/**
+ * Options to modify the behavior of a remote evaluation fetch request.
+ */
+export type FetchOptions = {
+  /**
+   * Specific flag keys to evaluate and set variants for.
+   */
+  flagKeys?: string[];
+};

@@ -8,7 +8,7 @@ import { version as PACKAGE_VERSION } from './gen/version';
 import { ExperimentConfig, Defaults } from './types/config';
 import { ConnectorUserProvider } from './integration/connector';
 import { LocalStorage } from './storage/localStorage';
-import { Client } from './types/client';
+import { Client, FetchOptions } from './types/client';
 import { ExposureTrackingProvider } from './types/exposure';
 import { isFallback, Source, VariantSource } from './types/source';
 import { Storage } from './types/storage';
@@ -91,19 +91,22 @@ export class ExperimentClient implements Client {
    * from the server, you generally do not need to call `fetch`.
    *
    * @param user The user to fetch variants for.
+   * @param options The {@link FetchOptions} for this specific request.
    * @returns Promise that resolves when the request for variants completes.
    * @see ExperimentUser
    * @see ExperimentUserProvider
    */
   public async fetch(
-    user: ExperimentUser = this.user
+    user: ExperimentUser = this.user,
+    options?: FetchOptions
   ): Promise<ExperimentClient> {
     this.setUser(user || {});
     try {
       await this.fetchInternal(
         user,
         this.config.fetchTimeoutMillis,
-        this.config.retryFetchOnFailure
+        this.config.retryFetchOnFailure,
+        options
       );
     } catch (e) {
       console.error(e);
@@ -313,7 +316,8 @@ export class ExperimentClient implements Client {
   private async fetchInternal(
     user: ExperimentUser,
     timeoutMillis: number,
-    retry: boolean
+    retry: boolean,
+    options?: FetchOptions
   ): Promise<Variants> {
     // Don't even try to fetch variants if API key is not set
     if (!this.apiKey) {
@@ -329,12 +333,12 @@ export class ExperimentClient implements Client {
     }
 
     try {
-      const variants = await this.doFetch(user, timeoutMillis);
-      this.storeVariants(variants);
+      const variants = await this.doFetch(user, timeoutMillis, options);
+      this.storeVariants(variants, options);
       return variants;
     } catch (e) {
       if (retry) {
-        this.startRetries(user);
+        this.startRetries(user, options);
       }
       throw e;
     }
@@ -342,7 +346,8 @@ export class ExperimentClient implements Client {
 
   private async doFetch(
     user: ExperimentUser,
-    timeoutMillis: number
+    timeoutMillis: number,
+    options?: FetchOptions
   ): Promise<Variants> {
     const userContext = await this.addContextOrWait(user, 1000);
     const encodedContext = urlSafeBase64Encode(JSON.stringify(userContext));
@@ -355,6 +360,11 @@ export class ExperimentClient implements Client {
       'Authorization': `Api-Key ${this.apiKey}`,
       'X-Amp-Exp-User': encodedContext,
     };
+    if (options && options.flagKeys) {
+      headers['X-Amp-Exp-Flag-Keys'] = urlSafeBase64Encode(
+        JSON.stringify(options.flagKeys)
+      );
+    }
     this.debug('[Experiment] Fetch variants for user: ', userContext);
     const response = await this.httpClient.request(
       endpoint,
@@ -384,16 +394,27 @@ export class ExperimentClient implements Client {
     return variants;
   }
 
-  private storeVariants(variants: Variants): void {
-    this.storage.clear();
+  private storeVariants(variants: Variants, options?: FetchOptions): void {
+    let failedFlagKeys = options && options.flagKeys ? options.flagKeys : [];
+    if (failedFlagKeys.length === 0) {
+      this.storage.clear();
+    }
     for (const key in variants) {
+      failedFlagKeys = failedFlagKeys.filter((flagKey) => flagKey !== key);
       this.storage.put(key, variants[key]);
+    }
+
+    for (const key in failedFlagKeys) {
+      this.storage.remove(key);
     }
     this.storage.save();
     this.debug('[Experiment] Stored variants: ', variants);
   }
 
-  private async startRetries(user: ExperimentUser): Promise<void> {
+  private async startRetries(
+    user: ExperimentUser,
+    options?: FetchOptions
+  ): Promise<void> {
     this.debug('[Experiment] Retry fetch');
     this.retriesBackoff = new Backoff(
       fetchBackoffAttempts,
@@ -402,7 +423,7 @@ export class ExperimentClient implements Client {
       fetchBackoffScalar
     );
     this.retriesBackoff.start(async () => {
-      await this.fetchInternal(user, fetchBackoffTimeout, false);
+      await this.fetchInternal(user, fetchBackoffTimeout, false, options);
     });
   }
 

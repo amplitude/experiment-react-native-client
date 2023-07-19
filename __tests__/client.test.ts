@@ -10,6 +10,7 @@ import { randomString } from '../src/util/randomstring';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { ExposureTrackingProvider } from '../src/types/exposure';
 import { Exposure } from '../lib/typescript';
+import { FetchOptions } from '../src/types/client';
 
 const delay = (ms: number) => new Promise((res) => setTimeout(res, ms));
 
@@ -391,4 +392,60 @@ test('ExperimentClient.variant experiment key passed from variant to exposure', 
   });
   client.variant('flagKey');
   expect(didTrack).toEqual(true);
+});
+
+const flagKeysTestVariantPartial = {
+  'sdk-ci-test': serverVariant,
+};
+const flagKeysTestVariants = {
+  'sdk-ci-test-2': { payload: undefined, value: 'on', expKey: undefined },
+  'sdk-ci-test': serverVariant,
+};
+
+test('ExperimentClient.fetch with partial flag keys in fetch options, should return the fetched variant', async () => {
+  const client = new ExperimentClient(API_KEY, {
+    httpClient: new TestHttpClient(),
+  });
+  const option: FetchOptions = { flagKeys: ['sdk-ci-test'] };
+  await client.fetch(testUser, option);
+  const variants = client.all();
+  expect(variants).toEqual(flagKeysTestVariantPartial);
+});
+
+test('ExperimentClient.fetch without fetch options, should return all variants', async () => {
+  const client = new ExperimentClient(API_KEY, {
+    debug: true,
+    httpClient: new TestHttpClient({
+      status: 200,
+      body: JSON.stringify({
+        'sdk-ci-test': { key: 'on', payload: 'payload' },
+        'sdk-ci-test-2': { key: 'on' },
+      }),
+    }),
+  });
+  await client.fetch(testUser);
+  const variant = client.all();
+  console.log(variant);
+  expect(variant).toEqual(flagKeysTestVariants);
+});
+
+test('ExperimentClient.fetch with not exist flagKeys in fetch options', async () => {
+  const client = new ExperimentClient(API_KEY, {
+    httpClient: new TestHttpClient({ status: 200, body: '{}' }),
+  });
+  const option: FetchOptions = { flagKeys: ['123'] };
+  await client.fetch(testUser, option);
+  const variant = client.all();
+  expect(variant).toEqual({});
+});
+
+test('existing storage variant removed when fetch without flag keys response stored', async () => {
+  const client = new ExperimentClient(API_KEY, {
+    httpClient: new TestHttpClient(),
+  });
+  // @ts-ignore
+  client.storage.put('not-fetched-variant', { value: 'on' });
+  await client.fetch(testUser);
+  const variant = client.variant('not-fetched-variant');
+  expect(variant).toEqual({});
 });
