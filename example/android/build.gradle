@@ -35,8 +35,5 @@ allprojects {
         google()
         jcenter()
         maven { url 'https://www.jitpack.io' }
-        maven {
-          url 'https://amplitude.jfrog.io/artifactory/libs-release'
-        }
     }
 }
