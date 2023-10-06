@@ -3,7 +3,7 @@ import { EventBridge, IdentityStore } from '@amplitude/analytics-connector';
 import { Exposure, ExposureTrackingProvider } from '../types/exposure';
 import { ExperimentUser, ExperimentUserProvider } from '../types/user';
 
-import { safeGlobal } from '../util/global';
+import { safeGlobal } from '@amplitude/experiment-core';
 
 type UserProperties = Record<
   string,
@@ -40,6 +40,10 @@ export class ConnectorUserProvider implements ExperimentUserProvider {
   }
 
   async getUser(): Promise<ExperimentUser> {
+    return this.getUserSync();
+  }
+
+  getUserSync(): ExperimentUser {
     const identity = this.identityStore.getIdentity();
     let userProperties: UserProperties;
     try {
