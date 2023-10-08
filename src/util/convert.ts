@@ -4,7 +4,7 @@ import { ExperimentUser } from '../types/user';
 import { Variant } from '../types/variant';
 
 export const convertUserToContext = (
-  user: ExperimentUser | undefined
+  user: ExperimentUser | undefined,
 ): Record<string, unknown> => {
   if (!user) {
     return {};

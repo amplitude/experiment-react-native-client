@@ -9,6 +9,6 @@ test('stringToUtf8Array', () => {
 
 test('urlSafeBase64Encode', () => {
   expect(urlSafeBase64Encode('My 🚀 is full of 🦎')).toEqual(
-    'TXkg8J-agCBpcyBmdWxsIG9mIPCfpo4'
+    'TXkg8J-agCBpcyBmdWxsIG9mIPCfpo4',
   );
 });

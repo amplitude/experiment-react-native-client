@@ -105,7 +105,9 @@ export class LoadStoreCache<V> {
   }
 }
 
-export const transformVariantFromStorage = (storageValue: unknown): Variant => {
+export const transformVariantFromStorage = (
+  storageValue: unknown,
+): Variant | undefined => {
   if (typeof storageValue === 'string') {
     // From v0 string format
     return {
@@ -137,4 +139,5 @@ export const transformVariantFromStorage = (storageValue: unknown): Variant => {
     if (experimentKey) variant.expKey = experimentKey;
     return variant;
   }
+  return undefined;
 };

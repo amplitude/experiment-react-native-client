@@ -2,7 +2,7 @@ const CHARS = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
 
 export const randomString = (
   length: number,
-  alphabet: string = CHARS
+  alphabet: string = CHARS,
 ): string => {
   let str = '';
   for (let i = 0; i < length; ++i) {

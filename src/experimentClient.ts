@@ -3,11 +3,29 @@
  * @module experiment-react-native-client
  */
 
-import { version as PACKAGE_VERSION } from './gen/version';
+import {
+  topologicalSort,
+  EvaluationApi,
+  EvaluationEngine,
+  EvaluationFlag,
+  FlagApi,
+  Poller,
+  SdkFlagApi,
+  SdkEvaluationApi,
+} from '@amplitude/experiment-core';
 
-import { ExperimentConfig, Defaults } from './types/config';
+import { version as PACKAGE_VERSION } from './gen/version';
 import { ConnectorUserProvider } from './integration/connector';
+import { DefaultUserProvider } from './integration/default';
+import {
+  getFlagStorage,
+  getVariantStorage,
+  LoadStoreCache,
+} from './storage/cache';
+import { LocalStorage } from './storage/local-storage';
+import { FetchHttpClient, WrapperClient } from './transport/http';
 import { Client, FetchOptions } from './types/client';
+import { ExperimentConfig, Defaults } from './types/config';
 import { Exposure, ExposureTrackingProvider } from './types/exposure';
 import { isFallback, Source, VariantSource } from './types/source';
 import { ExperimentUser, ExperimentUserProvider } from './types/user';
@@ -19,31 +37,12 @@ import {
   isRemoteEvaluationMode,
 } from './util';
 import { Backoff } from './util/backoff';
-import { SessionExposureTrackingProvider } from './util/sessionExposureTrackingProvider';
-import {
-  getFlagStorage,
-  getVariantStorage,
-  LoadStoreCache,
-} from './storage/cache';
-
-import {
-  topologicalSort,
-  EvaluationApi,
-  EvaluationEngine,
-  EvaluationFlag,
-  FlagApi,
-  Poller,
-  SdkFlagApi,
-  SdkEvaluationApi,
-} from '@amplitude/experiment-core';
-import { FetchHttpClient, WrapperClient } from './transport/http';
-import { LocalStorage } from './storage/local-storage';
-import { DefaultUserProvider } from './integration/default';
 import {
   convertEvaluationVariantToVariant,
   convertUserToContext,
   convertVariant,
 } from './util/convert';
+import { SessionExposureTrackingProvider } from './util/sessionExposureTrackingProvider';
 
 // Configs which have been removed from the public API.
 // May be added back in the future.
@@ -77,7 +76,7 @@ export class ExperimentClient implements Client {
   private retriesBackoff: Backoff | undefined;
   private poller: Poller = new Poller(
     () => this.doFlags(),
-    flagPollerIntervalMillis
+    flagPollerIntervalMillis,
   );
   private isRunning = false;
 
@@ -109,33 +108,33 @@ export class ExperimentClient implements Client {
           : Defaults.flagsServerUrl),
     };
     this.defaultUserProvider = new DefaultUserProvider(
-      this.config.userProvider
+      this.config.userProvider,
     );
     if (this.config.exposureTrackingProvider) {
       this.exposureTrackingProvider = new SessionExposureTrackingProvider(
-        this.config.exposureTrackingProvider
+        this.config.exposureTrackingProvider,
       );
     }
     // Setup Remote APIs
     const httpClient = new WrapperClient(
-      this.config.httpClient || FetchHttpClient
+      this.config.httpClient || FetchHttpClient,
     );
     this.flagApi = new SdkFlagApi(
       this.apiKey,
       this.config.flagsServerUrl,
-      httpClient
+      httpClient,
     );
     this.evaluationApi = new SdkEvaluationApi(
       this.apiKey,
       this.config.serverUrl,
-      httpClient
+      httpClient,
     );
     // Storage & Caching
     const storage = new LocalStorage();
     this.variants = getVariantStorage(
       this.apiKey,
       this.config.instanceName,
-      storage
+      storage,
     );
     this.flags = getFlagStorage(this.apiKey, this.config.instanceName, storage);
     // eslint-disable-next-line no-void
@@ -180,7 +179,7 @@ export class ExperimentClient implements Client {
     let remoteFlags =
       this.config.fetchOnStart ??
       Object.values(this.flags.getAll()).some((flag) =>
-        isRemoteEvaluationMode(flag)
+        isRemoteEvaluationMode(flag),
       );
     if (remoteFlags) {
       // We already have remote flags in our flag cache, so we know we need to
@@ -193,7 +192,7 @@ export class ExperimentClient implements Client {
       remoteFlags =
         this.config.fetchOnStart ??
         Object.values(this.flags.getAll()).some((flag) =>
-          isRemoteEvaluationMode(flag)
+          isRemoteEvaluationMode(flag),
         );
       if (remoteFlags) {
         // We already have remote flags in our flag cache, so we know we need to
@@ -209,7 +208,7 @@ export class ExperimentClient implements Client {
   /**
    * Stop the local flag configuration poller.
    */
-  public stop() {
+  public stop(): void {
     if (!this.isRunning) {
       return;
     }
@@ -242,7 +241,7 @@ export class ExperimentClient implements Client {
    */
   public async fetch(
     user: ExperimentUser = this.user,
-    options?: FetchOptions
+    options?: FetchOptions,
   ): Promise<ExperimentClient> {
     this.setUser(user || {});
     try {
@@ -250,7 +249,7 @@ export class ExperimentClient implements Client {
         user,
         this.config.fetchTimeoutMillis,
         this.config.retryFetchOnFailure,
-        options
+        options,
       );
     } catch (e) {
       console.error(e);
@@ -282,7 +281,7 @@ export class ExperimentClient implements Client {
       this.exposureInternal(key, sourceVariant);
     }
     this.debug(
-      `[Experiment] variant for ${key} is ${sourceVariant.variant?.value}`
+      `[Experiment] variant for ${key} is ${sourceVariant.variant?.value}`,
     );
     return sourceVariant.variant || {};
   }
@@ -333,7 +332,7 @@ export class ExperimentClient implements Client {
   /**
    * Clear all variants in the cache and storage.
    */
-  public clear() {
+  public clear(): void {
     this.variants.clear();
     // eslint-disable-next-line no-void
     void this.variants.store();
@@ -407,7 +406,7 @@ export class ExperimentClient implements Client {
     const variants: Variants = {};
     for (const flagKey of Object.keys(evaluationVariants)) {
       variants[flagKey] = convertEvaluationVariantToVariant(
-        evaluationVariants[flagKey]
+        evaluationVariants[flagKey],
       );
     }
     return variants;
@@ -415,7 +414,7 @@ export class ExperimentClient implements Client {
 
   private variantAndSource(
     key: string,
-    fallback?: string | Variant
+    fallback?: string | Variant,
   ): SourceVariant {
     let sourceVariant: SourceVariant = {};
     if (this.config.source === Source.LocalStorage) {
@@ -446,7 +445,7 @@ export class ExperimentClient implements Client {
   private localEvaluationVariantAndSource(
     key: string,
     flag: EvaluationFlag,
-    fallback?: string | Variant
+    fallback?: string | Variant,
   ): SourceVariant {
     let defaultSourceVariant: SourceVariant = {};
     // Local evaluation
@@ -508,7 +507,7 @@ export class ExperimentClient implements Client {
    */
   private localStorageVariantAndSource(
     key: string,
-    fallback?: string | Variant
+    fallback?: string | Variant,
   ): SourceVariant {
     let defaultSourceVariant: SourceVariant = {};
     // Local storage
@@ -570,7 +569,7 @@ export class ExperimentClient implements Client {
    */
   private initialVariantsVariantAndSource(
     key: string,
-    fallback?: string | Variant
+    fallback?: string | Variant,
   ): SourceVariant {
     let defaultSourceVariant: SourceVariant = {};
     // Initial variants
@@ -624,7 +623,7 @@ export class ExperimentClient implements Client {
     user: ExperimentUser,
     timeoutMillis: number,
     retry: boolean,
-    options?: FetchOptions
+    options?: FetchOptions,
   ): Promise<Variants> {
     // Don't even try to fetch variants if API key is not set
     if (!this.apiKey) {
@@ -654,7 +653,7 @@ export class ExperimentClient implements Client {
   private async doFetch(
     user: ExperimentUser,
     timeoutMillis: number,
-    options?: FetchOptions
+    options?: FetchOptions,
   ): Promise<Variants> {
     user = await this.addContextOrWait(user, 10000);
     this.debug('[Experiment] Fetch variants for user: ', user);
@@ -683,7 +682,7 @@ export class ExperimentClient implements Client {
 
   private async storeVariants(
     variants: Variants,
-    options?: FetchOptions
+    options?: FetchOptions,
   ): Promise<void> {
     let failedFlagKeys = options && options.flagKeys ? options.flagKeys : [];
     if (failedFlagKeys.length === 0) {
@@ -703,14 +702,14 @@ export class ExperimentClient implements Client {
 
   private async startRetries(
     user: ExperimentUser,
-    options?: FetchOptions
+    options?: FetchOptions,
   ): Promise<void> {
     this.debug('[Experiment] Retry fetch');
     this.retriesBackoff = new Backoff(
       fetchBackoffAttempts,
       fetchBackoffMinMillis,
       fetchBackoffMaxMillis,
-      fetchBackoffScalar
+      fetchBackoffScalar,
     );
     this.retriesBackoff.start(async () => {
       await this.fetchInternal(user, fetchBackoffTimeout, false, options);
@@ -735,9 +734,9 @@ export class ExperimentClient implements Client {
 
   private async addContextOrWait(
     user: ExperimentUser,
-    ms: number
+    ms: number,
   ): Promise<ExperimentUser> {
-    let baseProvider = this.defaultUserProvider.baseProvider;
+    const baseProvider = this.defaultUserProvider.baseProvider;
     if (baseProvider instanceof ConnectorUserProvider) {
       await baseProvider.identityReady(ms);
     }
@@ -746,7 +745,7 @@ export class ExperimentClient implements Client {
 
   private mergeContext(
     user: ExperimentUser,
-    providedUser: ExperimentUser
+    providedUser: ExperimentUser,
   ): ExperimentUser {
     const mergedUserProperties = {
       ...user?.user_properties,

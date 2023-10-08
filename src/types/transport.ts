@@ -9,6 +9,6 @@ export interface HttpClient {
     method: string,
     headers: Record<string, string>,
     data: string,
-    timeoutMillis?: number
+    timeoutMillis?: number,
   ): Promise<SimpleResponse>;
 }

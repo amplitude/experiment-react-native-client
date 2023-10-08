@@ -15,7 +15,7 @@ export class Backoff {
     attempts: number,
     min: number,
     max: number,
-    scalar: number
+    scalar: number,
   ) {
     this.attempts = attempts;
     this.min = min;
@@ -40,7 +40,7 @@ export class Backoff {
   private async backoff(
     fn: () => Promise<void>,
     attempt: number,
-    delay: number
+    delay: number,
   ): Promise<void> {
     if (this.done) {
       return;

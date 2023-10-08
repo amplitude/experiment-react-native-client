@@ -1,5 +1,6 @@
-import { Defaults } from './types/config';
+/* eslint-disable @typescript-eslint/no-empty-function, @typescript-eslint/no-unused-vars */
 import { Client } from './types/client';
+import { Defaults } from './types/config';
 import { ExperimentUser, ExperimentUserProvider } from './types/user';
 import { Variant, Variants } from './types/variant';
 
@@ -15,7 +16,7 @@ export class StubExperimentClient implements Client {
     return;
   }
 
-  public stop() {}
+  public stop(): void {}
 
   public setUser(_user: ExperimentUser): void {}
 
@@ -28,7 +29,7 @@ export class StubExperimentClient implements Client {
   }
 
   public setUserProvider(
-    _uerProvider: ExperimentUserProvider
+    _userProvider: ExperimentUserProvider,
   ): StubExperimentClient {
     return this;
   }
@@ -41,7 +42,7 @@ export class StubExperimentClient implements Client {
     return {};
   }
 
-  public clear() {}
+  public clear(): void {}
 
   public exposure(_key: string): void {}
 }

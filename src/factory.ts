@@ -1,12 +1,12 @@
 import { AnalyticsConnector } from '@amplitude/analytics-connector';
 
-import { Defaults, ExperimentConfig } from './types/config';
 import { ExperimentClient } from './experimentClient';
 import {
   ConnectorExposureTrackingProvider,
   ConnectorUserProvider,
 } from './integration/connector';
 import { DefaultUserProvider } from './integration/default';
+import { Defaults, ExperimentConfig } from './types/config';
 
 const instances = {};
 
@@ -19,7 +19,7 @@ const instances = {};
  */
 const initialize = (
   apiKey: string,
-  config?: ExperimentConfig
+  config?: ExperimentConfig,
 ): ExperimentClient => {
   // Store instances by appending the instance name and api key. Allows for
   // initializing multiple default instances for different api keys.
@@ -48,7 +48,7 @@ const initialize = (
  */
 const initializeWithAmplitudeAnalytics = (
   apiKey: string,
-  config?: ExperimentConfig
+  config?: ExperimentConfig,
 ): ExperimentClient => {
   // Store instances by appending the instance name and api key. Allows for
   // initializing multiple default instances for different api keys.
@@ -59,7 +59,7 @@ const initializeWithAmplitudeAnalytics = (
     config = {
       userProvider: new ConnectorUserProvider(connector.identityStore),
       exposureTrackingProvider: new ConnectorExposureTrackingProvider(
-        connector.eventBridge
+        connector.eventBridge,
       ),
       ...config,
     };

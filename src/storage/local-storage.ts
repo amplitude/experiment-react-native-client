@@ -1,5 +1,6 @@
-import { Storage } from '../types/storage';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+
+import { Storage } from '../types/storage';
 
 export class LocalStorage implements Storage {
   async get(key: string): Promise<string> {

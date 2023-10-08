@@ -1,8 +1,9 @@
 import { FetchHttpClient } from '../transport/http';
+
 import { ExposureTrackingProvider } from './exposure';
-import { ExperimentUserProvider } from './user';
 import { Source } from './source';
 import { HttpClient } from './transport';
+import { ExperimentUserProvider } from './user';
 import { Variant, Variants } from './variant';
 
 /**

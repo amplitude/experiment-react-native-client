@@ -1,16 +1,16 @@
 import { AnalyticsConnector } from '@amplitude/analytics-connector';
-import { ConnectorExposureTrackingProvider } from '../src/integration/connector';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
+import { Exposure } from '../lib/typescript';
 import { ExperimentClient } from '../src/experimentClient';
-import { HttpClient, SimpleResponse } from '../src/types/transport';
+import { ConnectorExposureTrackingProvider } from '../src/integration/connector';
+import { FetchOptions } from '../src/types/client';
+import { ExposureTrackingProvider } from '../src/types/exposure';
 import { Source } from '../src/types/source';
+import { HttpClient, SimpleResponse } from '../src/types/transport';
 import { ExperimentUser, ExperimentUserProvider } from '../src/types/user';
 import { Variant, Variants } from '../src/types/variant';
 import { randomString } from '../src/util/randomstring';
-import AsyncStorage from '@react-native-async-storage/async-storage';
-import { ExposureTrackingProvider } from '../src/types/exposure';
-import { Exposure } from '../lib/typescript';
-import { FetchOptions } from '../src/types/client';
 
 const delay = (ms: number) => new Promise((res) => setTimeout(res, ms));
 
@@ -214,7 +214,7 @@ test('ExperimentClient.fetch, sets user, setUser overrides', async () => {
  */
 test('ExperimentClient.fetch, with user provider, success', async () => {
   const client = new ExperimentClient(API_KEY, {}).setUserProvider(
-    new TestUserProvider()
+    new TestUserProvider(),
   );
   await client.fetch();
   const variant = client.variant('sdk-ci-test');
@@ -246,7 +246,7 @@ class TestExposureTrackingProvider implements ExposureTrackingProvider {
 test('ExperimentClient.variant, with exposure tracking provider, track called once per key', async () => {
   const eventBridge = AnalyticsConnector.getInstance('1').eventBridge;
   const exposureTrackingProvider = new ConnectorExposureTrackingProvider(
-    eventBridge
+    eventBridge,
   );
   const trackSpy = jest.spyOn(exposureTrackingProvider, 'track');
   const logEventSpy = jest.spyOn(eventBridge, 'logEvent');
@@ -306,7 +306,7 @@ test('configure httpClient, success', async () => {
   const client = new ExperimentClient(API_KEY, {
     httpClient: new TestHttpClient(
       200,
-      JSON.stringify({ flag: { key: 'key', value: 'key' } })
+      JSON.stringify({ flag: { key: 'key', value: 'key' } }),
     ),
   });
   await client.fetch();
@@ -321,7 +321,7 @@ test('ExperimentClient.clear, clear all variants in the cache and storage', asyn
   expect(variant).toEqual(serverVariant);
 
   client.clear();
-  var clearedVariants = client.all();
+  const clearedVariants = client.all();
   expect(clearedVariants).toEqual({});
 });
 
@@ -352,32 +352,6 @@ test('ExperimentClient.fetch with partial flag keys in fetch options, should ret
   const variants = client.all();
   expect(variants).toEqual(flagKeysTestVariantPartial);
 });
-
-test('ExperimentClient.fetch without fetch options, should return all variants', async () => {
-  const client = new ExperimentClient(API_KEY, {});
-  await client.fetch(testUser);
-  const variants = client.all();
-  expect(Object.keys(variants).length).toBeGreaterThanOrEqual(2);
-});
-
-test('ExperimentClient.fetch with not exist flagKeys in fetch options', async () => {
-  const client = new ExperimentClient(API_KEY, {});
-  const option: FetchOptions = { flagKeys: ['123'] };
-  await client.fetch(testUser, option);
-  const variant = client.all();
-  expect(variant).toEqual({});
-});
-
-test('existing storage variant removed when fetch without flag keys response stored', async () => {
-  const client = new ExperimentClient(API_KEY, {});
-  // @ts-ignore
-  client.variants.put('not-fetched-variant', { value: 'on' });
-  await client.fetch(testUser);
-  const variant = client.variant('not-fetched-variant');
-  expect(variant).toEqual({});
-});
-
-///
 
 test('ExperimentClient.fetch with partial flag keys in fetch options, should return the fetched variant', async () => {
   const client = new ExperimentClient(API_KEY, {});
@@ -424,9 +398,10 @@ describe('local evaluation', () => {
       fetchOnStart: true,
     });
     await client.start({ device_id: 'test_device' });
+    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
     // @ts-ignore
     expect(client.flags.get('sdk-ci-test-local').key).toEqual(
-      'sdk-ci-test-local'
+      'sdk-ci-test-local',
     );
     client.stop();
   });
@@ -469,20 +444,24 @@ describe('local evaluation', () => {
 describe('server zone', () => {
   test('no config uses defaults', () => {
     const client = new ExperimentClient(API_KEY, {});
+    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
     // @ts-ignore
     expect(client.config.serverUrl).toEqual('https://api.lab.amplitude.com');
+    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
     // @ts-ignore
     expect(client.config.flagsServerUrl).toEqual(
-      'https://flag.lab.amplitude.com'
+      'https://flag.lab.amplitude.com',
     );
   });
   test('us server zone config uses defaults', () => {
     const client = new ExperimentClient(API_KEY, { serverZone: 'US' });
+    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
     // @ts-ignore
     expect(client.config.serverUrl).toEqual('https://api.lab.amplitude.com');
+    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
     // @ts-ignore
     expect(client.config.flagsServerUrl).toEqual(
-      'https://flag.lab.amplitude.com'
+      'https://flag.lab.amplitude.com',
     );
   });
   test('us server zone with explicit config uses explicit config', () => {
@@ -491,18 +470,22 @@ describe('server zone', () => {
       serverUrl: 'https://experiment.company.com',
       flagsServerUrl: 'https://flags.company.com',
     });
+    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
     // @ts-ignore
     expect(client.config.serverUrl).toEqual('https://experiment.company.com');
+    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
     // @ts-ignore
     expect(client.config.flagsServerUrl).toEqual('https://flags.company.com');
   });
   test('eu server zone uses eu defaults', () => {
     const client = new ExperimentClient(API_KEY, { serverZone: 'EU' });
+    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
     // @ts-ignore
     expect(client.config.serverUrl).toEqual('https://api.lab.eu.amplitude.com');
+    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
     // @ts-ignore
     expect(client.config.flagsServerUrl).toEqual(
-      'https://flag.lab.eu.amplitude.com'
+      'https://flag.lab.eu.amplitude.com',
     );
   });
   test('eu server zone with explicit config uses explicit config', () => {
@@ -511,8 +494,10 @@ describe('server zone', () => {
       serverUrl: 'https://expeirment.company.com',
       flagsServerUrl: 'https://flags.company.com',
     });
+    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
     // @ts-ignore
     expect(client.config.serverUrl).toEqual('https://expeirment.company.com');
+    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
     // @ts-ignore
     expect(client.config.flagsServerUrl).toEqual('https://flags.company.com');
   });
@@ -781,7 +766,7 @@ describe('variant fallbacks', () => {
       expect(variant.metadata.evaluationMode).toEqual('local');
       expect(spy).toHaveBeenCalledTimes(1);
       expect((spy.mock.calls[0] as any[])[0].flag_key).toEqual(
-        'sdk-ci-test-local'
+        'sdk-ci-test-local',
       );
       expect((spy.mock.calls[0] as any[])[0].variant).toEqual('on');
     });
@@ -806,7 +791,7 @@ describe('variant fallbacks', () => {
       expect(variant.value).toEqual('inline');
       expect(spy).toHaveBeenCalledTimes(1);
       expect((spy.mock.calls[0] as any[])[0].flag_key).toEqual(
-        'sdk-ci-test-local'
+        'sdk-ci-test-local',
       );
       expect((spy.mock.calls[0] as any[])[0].variant).toBeUndefined();
     });
@@ -831,7 +816,7 @@ describe('variant fallbacks', () => {
       expect(variant.value).toEqual('initial');
       expect(spy).toHaveBeenCalledTimes(1);
       expect((spy.mock.calls[0] as any[])[0].flag_key).toEqual(
-        'sdk-ci-test-local'
+        'sdk-ci-test-local',
       );
       expect((spy.mock.calls[0] as any[])[0].variant).toBeUndefined();
     });
@@ -859,7 +844,7 @@ describe('variant fallbacks', () => {
       expect(variant.value).toEqual('fallback');
       expect(spy).toHaveBeenCalledTimes(1);
       expect((spy.mock.calls[0] as any[])[0].flag_key).toEqual(
-        'sdk-ci-test-local'
+        'sdk-ci-test-local',
       );
       expect((spy.mock.calls[0] as any[])[0].variant).toBeUndefined();
     });
@@ -880,7 +865,7 @@ describe('variant fallbacks', () => {
       expect(variant.value).toBeUndefined();
       expect(spy).toHaveBeenCalledTimes(1);
       expect((spy.mock.calls[0] as any[])[0].flag_key).toEqual(
-        'sdk-ci-test-local'
+        'sdk-ci-test-local',
       );
       expect((spy.mock.calls[0] as any[])[0].variant).toBeUndefined();
     });
@@ -939,6 +924,7 @@ describe('start', () => {
   }, 10000);
   test('with local evaluation only, does not call fetch', async () => {
     const client = new ExperimentClient(API_KEY, {});
+    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
     // @ts-ignore
     client.flags.getAll = () => {
       return {};
@@ -952,6 +938,7 @@ describe('start', () => {
     const client = new ExperimentClient(API_KEY, {
       fetchOnStart: true,
     });
+    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
     // @ts-ignore
     client.flags.getAll = () => {
       return {};

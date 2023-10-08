@@ -1,13 +1,13 @@
-import { ExperimentUser, ExperimentUserProvider } from '../types/user';
-
-import { NativeModules } from 'react-native';
 import {
   AnalyticsConnector,
   ApplicationContext,
 } from '@amplitude/analytics-connector';
+import { Poller } from '@amplitude/experiment-core';
+import { NativeModules } from 'react-native';
+
+import { ExperimentUser, ExperimentUserProvider } from '../types/user';
 import { isNative } from '../util/platform';
 
-import { Poller } from '@amplitude/experiment-core';
 import { ConnectorUserProvider } from './connector';
 
 export interface ExperimentReactNativeClientModule {
@@ -29,7 +29,7 @@ export class DefaultUserProvider implements ExperimentUserProvider {
     this.baseProvider = baseProvider;
     this.applicationContext =
       AnalyticsConnector.getInstance(
-        'context'
+        'context',
       ).applicationContextProvider.getApplicationContext();
     this.load();
     this.poller.start();

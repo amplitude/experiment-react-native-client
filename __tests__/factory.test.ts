@@ -1,5 +1,6 @@
-import { Experiment } from '../src/factory';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+
+import { Experiment } from '../src/factory';
 
 const API_KEY = 'client-DvWljIjiiuqLbyjqdvBaLFfEBrAvGuA3';
 const OTHER_KEY = 'some-other-key';
