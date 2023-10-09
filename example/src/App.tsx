@@ -1,13 +1,11 @@
-import * as React from 'react';
-
-import { StyleSheet, View, Text } from 'react-native';
+import { init, track } from '@amplitude/analytics-react-native';
 import {
   Experiment,
   Variant,
   Variants,
 } from '@amplitude/experiment-react-native-client';
-
-import { init, track } from '@amplitude/analytics-react-native';
+import * as React from 'react';
+import { StyleSheet, View, Text } from 'react-native';
 
 export default function App() {
   const [variant, setVariant] = React.useState<Variant | undefined>();
@@ -31,7 +29,7 @@ export default function App() {
           {
             debug: true,
             fallbackVariant: { value: 'defaultFallback' },
-          }
+          },
         );
         await experiment.fetch({
           user_properties: { test: 'true', test2: 4.3 },
@@ -49,7 +47,7 @@ export default function App() {
               number: 2.2,
               string: 'string',
             },
-          })
+          }),
         );
         setPayloadVariant(experiment.variant('android-demo'));
         setAllVariants(experiment.all());

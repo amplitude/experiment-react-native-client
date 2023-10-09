@@ -1,9 +1,8 @@
 import { EventBridge, IdentityStore } from '@amplitude/analytics-connector';
+import { safeGlobal } from '@amplitude/experiment-core';
 
 import { Exposure, ExposureTrackingProvider } from '../types/exposure';
 import { ExperimentUser, ExperimentUserProvider } from '../types/user';
-
-import { safeGlobal } from '../util/global';
 
 type UserProperties = Record<
   string,
@@ -32,7 +31,7 @@ export class ConnectorUserProvider implements ExperimentUserProvider {
             reject,
             ms,
             'Timed out waiting for Amplitude Analytics SDK to initialize. ' +
-              'You must ensure that the analytics SDK is initialized prior to calling fetch().'
+              'You must ensure that the analytics SDK is initialized prior to calling fetch().',
           );
         }),
       ]);
@@ -40,6 +39,10 @@ export class ConnectorUserProvider implements ExperimentUserProvider {
   }
 
   async getUser(): Promise<ExperimentUser> {
+    return this.getUserSync();
+  }
+
+  getUserSync(): ExperimentUser {
     const identity = this.identityStore.getIdentity();
     let userProperties: UserProperties;
     try {

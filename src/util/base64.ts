@@ -11,7 +11,7 @@ export const stringToUtf8Array = (s: string): Array<number> => {
 
 export const urlSafeBase64Encode = (s: string): string => {
   const base64encoded = base64.fromByteArray(
-    new Uint8Array(stringToUtf8Array(s))
+    new Uint8Array(stringToUtf8Array(s)),
   );
   return base64encoded
     .replace(/[=]/g, '')

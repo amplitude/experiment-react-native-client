@@ -1,16 +1,16 @@
 import { AnalyticsConnector } from '@amplitude/analytics-connector';
-import { ConnectorExposureTrackingProvider } from '../src/integration/connector';
-import { HttpClient, SimpleResponse } from '../src/types/transport';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
+import { Exposure } from '../lib/typescript';
 import { ExperimentClient } from '../src/experimentClient';
+import { ConnectorExposureTrackingProvider } from '../src/integration/connector';
+import { FetchOptions } from '../src/types/client';
+import { ExposureTrackingProvider } from '../src/types/exposure';
 import { Source } from '../src/types/source';
+import { HttpClient, SimpleResponse } from '../src/types/transport';
 import { ExperimentUser, ExperimentUserProvider } from '../src/types/user';
 import { Variant, Variants } from '../src/types/variant';
 import { randomString } from '../src/util/randomstring';
-import AsyncStorage from '@react-native-async-storage/async-storage';
-import { ExposureTrackingProvider } from '../src/types/exposure';
-import { Exposure } from '../lib/typescript';
-import { FetchOptions } from '../src/types/client';
 
 const delay = (ms: number) => new Promise((res) => setTimeout(res, ms));
 
@@ -25,12 +25,8 @@ const API_KEY = 'client-DvWljIjiiuqLbyjqdvBaLFfEBrAvGuA3';
 const testUser: ExperimentUser = { user_id: 'test_user' };
 
 const serverKey = 'sdk-ci-test';
-const serverVariant: Variant = { value: 'on', payload: 'payload' };
+const serverVariant: Variant = { key: 'on', value: 'on', payload: 'payload' };
 const serverOffVariant: Variant = { value: 'off' };
-
-const serverResponseBody = JSON.stringify({
-  [`${serverKey}`]: { key: 'on', payload: 'payload' },
-});
 
 const initialKey = 'initial-key';
 const initialVariant: Variant = { value: 'initial' };
@@ -42,7 +38,10 @@ const initialVariants: Variants = {
 
 const fallbackVariant: Variant = { value: 'fallback', payload: 'payload' };
 const explicitFallbackString = 'first';
-const explicitFallbackVariant: Variant = { value: explicitFallbackString };
+const explicitFallbackVariant: Variant = {
+  key: explicitFallbackString,
+  value: explicitFallbackString,
+};
 const unknownKey = 'not-a-valid-key';
 
 beforeEach(async () => {
@@ -50,36 +49,23 @@ beforeEach(async () => {
 });
 
 class TestHttpClient implements HttpClient {
-  private readonly response: SimpleResponse;
-  constructor(
-    response: SimpleResponse = { status: 200, body: serverResponseBody }
-  ) {
-    this.response = response;
+  public readonly status: number;
+  public readonly body: string;
+
+  constructor(status: number, body: string) {
+    this.status = status;
+    this.body = body;
   }
-  async request(
-    _requestUrl: string,
-    _method: string,
-    _headers: Record<string, string>,
-    _data: string,
-    timeoutMillis?: number
-  ): Promise<SimpleResponse> {
-    if (timeoutMillis === 1) {
-      await delay(timeoutMillis);
-      return Promise.reject(
-        new Error('Request timeout after ' + timeoutMillis + ' milliseconds')
-      );
-    }
-    return Promise.resolve(this.response as SimpleResponse);
+
+  async request(): Promise<SimpleResponse> {
+    return { status: this.status, body: this.body } as SimpleResponse;
   }
 }
-
 /**
  * Basic test that fetching variants for a user succeeds.
  */
 test('ExperimentClient.fetch, success', async () => {
-  const client = new ExperimentClient(API_KEY, {
-    httpClient: new TestHttpClient(),
-  });
+  const client = new ExperimentClient(API_KEY, {});
   await client.fetch(testUser);
   const variant = client.variant(serverKey);
   expect(variant).toEqual(serverVariant);
@@ -93,7 +79,6 @@ test('ExperimentClient.fetch, no retries, timeout failure', async () => {
   const client = new ExperimentClient(API_KEY, {
     retryFetchOnFailure: false,
     fetchTimeoutMillis: 1,
-    httpClient: new TestHttpClient(),
   });
   await client.fetch(testUser);
   const variants = client.all();
@@ -108,7 +93,6 @@ test('ExperimentClient.fetch, with retries, retry success', async () => {
   const client = new ExperimentClient(API_KEY, {
     fallbackVariant: fallbackVariant,
     fetchTimeoutMillis: 1,
-    httpClient: new TestHttpClient(),
   });
   await client.fetch(testUser);
   let variant = client.variant(serverKey);
@@ -128,7 +112,6 @@ test('ExperimentClient.variant, no stored variants, explicit fallback returned',
   const client = new ExperimentClient(API_KEY, {
     fallbackVariant: fallbackVariant,
     initialVariants: initialVariants,
-    httpClient: new TestHttpClient(),
   });
 
   variant = client.variant(unknownKey, explicitFallbackVariant);
@@ -152,7 +135,6 @@ test('ExperimentClient.variant, unknown key returns default fallback', () => {
   const client = new ExperimentClient(API_KEY, {
     fallbackVariant: fallbackVariant,
     initialVariants: initialVariants,
-    httpClient: new TestHttpClient(),
   });
   const variant: Variant = client.variant(unknownKey);
   expect(variant).toEqual(fallbackVariant);
@@ -168,7 +150,6 @@ test('ExperimentClient.variant, initial variants fallback before fetch, no fallb
   const client = new ExperimentClient(API_KEY, {
     fallbackVariant: fallbackVariant,
     initialVariants: initialVariants,
-    httpClient: new TestHttpClient(),
   });
 
   variant = client.variant(initialKey);
@@ -193,7 +174,6 @@ test('ExperimentClient.variant, initial variants fallback before fetch, no fallb
 test('ExperimentClient.all, initial variants returned', async () => {
   const client = new ExperimentClient(API_KEY, {
     initialVariants: initialVariants,
-    httpClient: new TestHttpClient(),
   });
   const variants = client.all();
   expect(variants).toEqual(initialVariants);
@@ -207,7 +187,6 @@ test('ExperimentClient.fetch, initial variants source, prefer initial', async ()
   const client = new ExperimentClient(API_KEY, {
     source: Source.InitialVariants,
     initialVariants: initialVariants,
-    httpClient: new TestHttpClient(),
   });
   let variant = client.variant(serverKey);
   expect(variant).toEqual(serverOffVariant);
@@ -221,9 +200,7 @@ test('ExperimentClient.fetch, initial variants source, prefer initial', async ()
  * client, and calling setUser() after will overwrite the user.
  */
 test('ExperimentClient.fetch, sets user, setUser overrides', async () => {
-  const client = new ExperimentClient(API_KEY, {
-    httpClient: new TestHttpClient(),
-  });
+  const client = new ExperimentClient(API_KEY, {});
   await client.fetch(testUser);
   expect(client.getUser()).toEqual(testUser);
   const newUser = { user_id: 'new_test_user' };
@@ -236,12 +213,12 @@ test('ExperimentClient.fetch, sets user, setUser overrides', async () => {
  * explicit user argument is successful.
  */
 test('ExperimentClient.fetch, with user provider, success', async () => {
-  const client = new ExperimentClient(API_KEY, {
-    httpClient: new TestHttpClient(),
-  }).setUserProvider(new TestUserProvider());
+  const client = new ExperimentClient(API_KEY, {}).setUserProvider(
+    new TestUserProvider(),
+  );
   await client.fetch();
   const variant = client.variant('sdk-ci-test');
-  expect(variant).toEqual({ value: 'on', payload: 'payload' });
+  expect(variant).toEqual({ key: 'on', value: 'on', payload: 'payload' });
 });
 
 /**
@@ -251,11 +228,10 @@ test('ExperimentClient.fetch, with user provider, success', async () => {
 test('ExperimentClient.fetch, with config user provider, success', async () => {
   const client = new ExperimentClient(API_KEY, {
     userProvider: new TestUserProvider(),
-    httpClient: new TestHttpClient(),
   });
   await client.fetch();
   const variant = client.variant('sdk-ci-test');
-  expect(variant).toEqual({ value: 'on', payload: 'payload' });
+  expect(variant).toEqual({ key: 'on', value: 'on', payload: 'payload' });
 });
 
 /**
@@ -270,39 +246,31 @@ class TestExposureTrackingProvider implements ExposureTrackingProvider {
 test('ExperimentClient.variant, with exposure tracking provider, track called once per key', async () => {
   const eventBridge = AnalyticsConnector.getInstance('1').eventBridge;
   const exposureTrackingProvider = new ConnectorExposureTrackingProvider(
-    eventBridge
+    eventBridge,
   );
   const trackSpy = jest.spyOn(exposureTrackingProvider, 'track');
   const logEventSpy = jest.spyOn(eventBridge, 'logEvent');
   const client = new ExperimentClient(API_KEY, {
     exposureTrackingProvider: exposureTrackingProvider,
-    httpClient: new TestHttpClient(),
   });
   await client.fetch(testUser);
   for (let i = 0; i < 10; i++) {
     client.variant('key-that-does-not-exist');
   }
 
-  expect(trackSpy).toBeCalledTimes(1);
-  expect(trackSpy).toHaveBeenCalledWith({
-    flag_key: 'key-that-does-not-exist',
-  });
-  expect(logEventSpy).toBeCalledTimes(1);
-  expect(logEventSpy).toHaveBeenCalledWith({
-    eventType: '$exposure',
-    eventProperties: { flag_key: 'key-that-does-not-exist' },
-  });
+  expect(trackSpy).toBeCalledTimes(0);
+  expect(logEventSpy).toBeCalledTimes(0);
 
   for (let i = 0; i < 10; i++) {
     client.variant(serverKey);
   }
 
-  expect(trackSpy).toBeCalledTimes(2);
+  expect(trackSpy).toBeCalledTimes(1);
   expect(trackSpy).toHaveBeenCalledWith({
     flag_key: serverKey,
     variant: serverVariant.value,
   });
-  expect(logEventSpy).toBeCalledTimes(2);
+  expect(logEventSpy).toBeCalledTimes(1);
   expect(logEventSpy).toHaveBeenCalledWith({
     eventType: '$exposure',
     eventProperties: {
@@ -321,7 +289,6 @@ test('ExperimentClient.variant, with analytics provider, exposure tracked, unset
   const spyTrack = jest.spyOn(exposureTrackingProvider, 'track');
   const client = new ExperimentClient(API_KEY, {
     exposureTrackingProvider: exposureTrackingProvider,
-    httpClient: new TestHttpClient(),
   });
   await client.fetch(testUser);
   client.variant(serverKey);
@@ -335,46 +302,26 @@ test('ExperimentClient.variant, with analytics provider, exposure tracked, unset
   expect(spyTrack).lastCalledWith(expectedEvent);
 });
 
-/**
- * Configure a client with an exposure tracking provider which fails the test if called.
- * Tests that the exposure tracking provider is  called with an exposure event without a variant
- * when the client exposes the user to a fallback/initial variant.
- */
-test('ExperimentClient.variant, with exposure tracking provider, exposure not tracked on fallback, unset sent', async () => {
-  const exposureTrackingProvider = new TestExposureTrackingProvider();
-  const spyTrack = jest.spyOn(exposureTrackingProvider, 'track');
-  const client = new ExperimentClient(API_KEY, {
-    exposureTrackingProvider: exposureTrackingProvider,
-  });
-  client.variant(initialKey);
-  client.variant(unknownKey);
-
-  expect(spyTrack).toHaveBeenNthCalledWith(1, { flag_key: initialKey });
-  expect(spyTrack).toHaveBeenNthCalledWith(2, { flag_key: unknownKey });
-});
-
 test('configure httpClient, success', async () => {
   const client = new ExperimentClient(API_KEY, {
-    httpClient: new TestHttpClient({
-      status: 200,
-      body: JSON.stringify({ flag: { key: 'key' } }),
-    }),
+    httpClient: new TestHttpClient(
+      200,
+      JSON.stringify({ flag: { key: 'key', value: 'key' } }),
+    ),
   });
   await client.fetch();
   const v = client.variant('flag');
-  expect(v).toEqual({ value: 'key' });
+  expect(v).toEqual({ key: 'key', value: 'key' });
 });
 
 test('ExperimentClient.clear, clear all variants in the cache and storage', async () => {
-  const client = new ExperimentClient(API_KEY, {
-    httpClient: new TestHttpClient(),
-  });
+  const client = new ExperimentClient(API_KEY, {});
   await client.fetch(testUser);
   const variant = client.variant(serverKey);
   expect(variant).toEqual(serverVariant);
 
   client.clear();
-  var clearedVariants = client.all();
+  const clearedVariants = client.all();
   expect(clearedVariants).toEqual({});
 });
 
@@ -397,55 +344,616 @@ test('ExperimentClient.variant experiment key passed from variant to exposure', 
 const flagKeysTestVariantPartial = {
   'sdk-ci-test': serverVariant,
 };
-const flagKeysTestVariants = {
-  'sdk-ci-test-2': { payload: undefined, value: 'on', expKey: undefined },
-  'sdk-ci-test': serverVariant,
-};
 
 test('ExperimentClient.fetch with partial flag keys in fetch options, should return the fetched variant', async () => {
-  const client = new ExperimentClient(API_KEY, {
-    httpClient: new TestHttpClient(),
-  });
+  const client = new ExperimentClient(API_KEY, {});
   const option: FetchOptions = { flagKeys: ['sdk-ci-test'] };
   await client.fetch(testUser, option);
   const variants = client.all();
   expect(variants).toEqual(flagKeysTestVariantPartial);
 });
 
-test('ExperimentClient.fetch without fetch options, should return all variants', async () => {
-  const client = new ExperimentClient(API_KEY, {
-    debug: true,
-    httpClient: new TestHttpClient({
-      status: 200,
-      body: JSON.stringify({
-        'sdk-ci-test': { key: 'on', payload: 'payload' },
-        'sdk-ci-test-2': { key: 'on' },
-      }),
-    }),
-  });
-  await client.fetch(testUser);
+test('ExperimentClient.fetch with partial flag keys in fetch options, should return the fetched variant', async () => {
+  const client = new ExperimentClient(API_KEY, {});
+  const option: FetchOptions = { flagKeys: ['sdk-ci-test'] };
+  await client.fetch(testUser, option);
   const variant = client.all();
-  console.log(variant);
-  expect(variant).toEqual(flagKeysTestVariants);
+  expect(variant).toEqual(flagKeysTestVariantPartial);
+});
+
+test('ExperimentClient.fetch without fetch options, should return all variants', async () => {
+  const client = new ExperimentClient(API_KEY, {});
+  await client.fetch(testUser);
+  const variants = client.all();
+  expect(Object.keys(variants).length).toBeGreaterThanOrEqual(2);
 });
 
 test('ExperimentClient.fetch with not exist flagKeys in fetch options', async () => {
-  const client = new ExperimentClient(API_KEY, {
-    httpClient: new TestHttpClient({ status: 200, body: '{}' }),
-  });
+  const client = new ExperimentClient(API_KEY, {});
   const option: FetchOptions = { flagKeys: ['123'] };
   await client.fetch(testUser, option);
   const variant = client.all();
   expect(variant).toEqual({});
 });
 
-test('existing storage variant removed when fetch without flag keys response stored', async () => {
+test('ExperimentClient.variant experiment key passed from variant to exposure', async () => {
+  let didTrack = false;
   const client = new ExperimentClient(API_KEY, {
-    httpClient: new TestHttpClient(),
+    exposureTrackingProvider: {
+      track: (exposure: Exposure) => {
+        expect(exposure.experiment_key).toEqual('expKey');
+        didTrack = true;
+      },
+    },
+    source: Source.InitialVariants,
+    initialVariants: { flagKey: { value: 'value', expKey: 'expKey' } },
   });
-  // @ts-ignore
-  client.storage.put('not-fetched-variant', { value: 'on' });
-  await client.fetch(testUser);
-  const variant = client.variant('not-fetched-variant');
-  expect(variant).toEqual({});
+  client.variant('flagKey');
+  expect(didTrack).toEqual(true);
+});
+
+describe('local evaluation', () => {
+  test('start loads flags into local storage', async () => {
+    const client = new ExperimentClient(API_KEY, {
+      fetchOnStart: true,
+    });
+    await client.start({ device_id: 'test_device' });
+    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+    // @ts-ignore
+    expect(client.flags.get('sdk-ci-test-local').key).toEqual(
+      'sdk-ci-test-local',
+    );
+    client.stop();
+  });
+
+  test('variant after start returns expected locally evaluated variant', async () => {
+    const client = new ExperimentClient(API_KEY, {
+      fetchOnStart: true,
+    });
+    await client.start({ device_id: 'test_device' });
+    let variant = client.variant('sdk-ci-test-local');
+    expect(variant.key).toEqual('on');
+    expect(variant.value).toEqual('on');
+    client.setUser({});
+    variant = client.variant('sdk-ci-test-local');
+    expect(variant.key).toEqual('off');
+    expect(variant.value).toBeUndefined();
+    client.stop();
+  });
+
+  test('remote evaluation variant preferred over local evaluation variant', async () => {
+    const client = new ExperimentClient(API_KEY, {
+      fetchOnStart: false,
+    });
+    const user = { user_id: 'test_user', device_id: 'test_device' };
+    await client.start(user);
+    let variant = client.variant('sdk-ci-test');
+    expect(variant.key).toEqual('off');
+    expect(variant.value).toBeUndefined();
+    await client.fetch(user);
+    variant = client.variant('sdk-ci-test');
+    expect(variant).toEqual({
+      key: 'on',
+      value: 'on',
+      payload: 'payload',
+    });
+    client.stop();
+  });
+});
+
+describe('server zone', () => {
+  test('no config uses defaults', () => {
+    const client = new ExperimentClient(API_KEY, {});
+    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+    // @ts-ignore
+    expect(client.config.serverUrl).toEqual('https://api.lab.amplitude.com');
+    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+    // @ts-ignore
+    expect(client.config.flagsServerUrl).toEqual(
+      'https://flag.lab.amplitude.com',
+    );
+  });
+  test('us server zone config uses defaults', () => {
+    const client = new ExperimentClient(API_KEY, { serverZone: 'US' });
+    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+    // @ts-ignore
+    expect(client.config.serverUrl).toEqual('https://api.lab.amplitude.com');
+    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+    // @ts-ignore
+    expect(client.config.flagsServerUrl).toEqual(
+      'https://flag.lab.amplitude.com',
+    );
+  });
+  test('us server zone with explicit config uses explicit config', () => {
+    const client = new ExperimentClient(API_KEY, {
+      serverZone: 'US',
+      serverUrl: 'https://experiment.company.com',
+      flagsServerUrl: 'https://flags.company.com',
+    });
+    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+    // @ts-ignore
+    expect(client.config.serverUrl).toEqual('https://experiment.company.com');
+    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+    // @ts-ignore
+    expect(client.config.flagsServerUrl).toEqual('https://flags.company.com');
+  });
+  test('eu server zone uses eu defaults', () => {
+    const client = new ExperimentClient(API_KEY, { serverZone: 'EU' });
+    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+    // @ts-ignore
+    expect(client.config.serverUrl).toEqual('https://api.lab.eu.amplitude.com');
+    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+    // @ts-ignore
+    expect(client.config.flagsServerUrl).toEqual(
+      'https://flag.lab.eu.amplitude.com',
+    );
+  });
+  test('eu server zone with explicit config uses explicit config', () => {
+    const client = new ExperimentClient(API_KEY, {
+      serverZone: 'EU',
+      serverUrl: 'https://expeirment.company.com',
+      flagsServerUrl: 'https://flags.company.com',
+    });
+    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+    // @ts-ignore
+    expect(client.config.serverUrl).toEqual('https://expeirment.company.com');
+    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+    // @ts-ignore
+    expect(client.config.flagsServerUrl).toEqual('https://flags.company.com');
+  });
+});
+
+describe('variant fallbacks', () => {
+  describe('local storage source', () => {
+    test('variant accessed from local storage primary', async () => {
+      const user = { user_id: 'test_user' };
+      const exposureTrackingProvider = new TestExposureTrackingProvider();
+      const spy = jest.spyOn(exposureTrackingProvider, 'track');
+      const client = new ExperimentClient(API_KEY, {
+        exposureTrackingProvider: exposureTrackingProvider,
+        source: Source.LocalStorage,
+        fetchOnStart: true,
+      });
+      // Start and fetch
+      await client.start(user);
+      // Variant is result of fetch
+      const variant = client.variant('sdk-ci-test');
+      expect(variant.key).toEqual('on');
+      expect(variant.value).toEqual('on');
+      expect(variant.payload).toEqual('payload');
+      expect(spy).toHaveBeenCalledTimes(1);
+      expect((spy.mock.calls[0] as any[])[0].flag_key).toEqual('sdk-ci-test');
+      expect((spy.mock.calls[0] as any[])[0].variant).toEqual('on');
+    });
+
+    test('variant accessed from inline fallback before initial variants secondary', async () => {
+      const user = {};
+      const exposureTrackingProvider = new TestExposureTrackingProvider();
+      const spy = jest.spyOn(exposureTrackingProvider, 'track');
+      const client = new ExperimentClient(API_KEY, {
+        exposureTrackingProvider: exposureTrackingProvider,
+        source: Source.LocalStorage,
+        fetchOnStart: true,
+        initialVariants: {
+          'sdk-ci-test': { key: 'initial', value: 'initial' },
+        },
+        fallbackVariant: { key: 'fallback', value: 'fallback' },
+      });
+      // Start and fetch
+      await client.start(user);
+      // Variant is result of inline fallback string
+      const variantString = client.variant('sdk-ci-test', 'inline');
+      expect(variantString).toEqual({ key: 'inline', value: 'inline' });
+      // Variant is result of inline fallback object
+      const variantObject = client.variant('sdk-ci-test', { value: 'inline' });
+      expect(variantObject).toEqual({ value: 'inline' });
+      expect(spy).toHaveBeenCalledTimes(1);
+      expect((spy.mock.calls[0] as any[])[0].flag_key).toEqual('sdk-ci-test');
+      expect((spy.mock.calls[0] as any[])[0].variant).toBeUndefined();
+    });
+
+    test('variant accessed from initial variants when no explicit fallback provided', async () => {
+      const user = {};
+      const exposureTrackingProvider = new TestExposureTrackingProvider();
+      const spy = jest.spyOn(exposureTrackingProvider, 'track');
+      const client = new ExperimentClient(API_KEY, {
+        exposureTrackingProvider: exposureTrackingProvider,
+        source: Source.LocalStorage,
+        fetchOnStart: true,
+        initialVariants: {
+          'sdk-ci-test': { key: 'initial', value: 'initial' },
+        },
+        fallbackVariant: { key: 'fallback', value: 'fallback' },
+      });
+      // Start and fetch
+      await client.start(user);
+      const variant = client.variant('sdk-ci-test');
+      // Variant is result of initialVariants
+      expect(variant).toEqual({ key: 'initial', value: 'initial' });
+      expect(spy).toHaveBeenCalledTimes(1);
+      expect((spy.mock.calls[0] as any[])[0].flag_key).toEqual('sdk-ci-test');
+      expect((spy.mock.calls[0] as any[])[0].variant).toBeUndefined();
+    });
+
+    test('variant accessed from configured fallback when no initial variants or explicit fallback provided', async () => {
+      const user = {};
+      const exposureTrackingProvider = new TestExposureTrackingProvider();
+      const spy = jest.spyOn(exposureTrackingProvider, 'track');
+      const client = new ExperimentClient(API_KEY, {
+        exposureTrackingProvider: exposureTrackingProvider,
+        source: Source.LocalStorage,
+        fetchOnStart: true,
+        initialVariants: {
+          'sdk-ci-test-not-selected': { key: 'initial', value: 'initial' },
+        },
+        fallbackVariant: { key: 'fallback', value: 'fallback' },
+      });
+      // Start and fetch
+      await client.start(user);
+      const variant = client.variant('sdk-ci-test');
+      // Variant is result of fallbackVariant
+      expect(variant).toEqual({ key: 'fallback', value: 'fallback' });
+      expect(spy).toHaveBeenCalledTimes(1);
+      expect((spy.mock.calls[0] as any[])[0].flag_key).toEqual('sdk-ci-test');
+      expect((spy.mock.calls[0] as any[])[0].variant).toBeUndefined();
+    });
+
+    test('default variant returned when no other fallback is provided', async () => {
+      const user = {};
+      const exposureTrackingProvider = new TestExposureTrackingProvider();
+      const spy = jest.spyOn(exposureTrackingProvider, 'track');
+      const client = new ExperimentClient(API_KEY, {
+        exposureTrackingProvider: exposureTrackingProvider,
+        source: Source.LocalStorage,
+        fetchOnStart: true,
+      });
+      // Start and fetch
+      await client.start(user);
+      const variant = client.variant('sdk-ci-test');
+      expect(variant.key).toEqual('off');
+      expect(variant.value).toBeUndefined();
+      expect(variant.metadata?.default).toEqual(true);
+      expect(spy).toHaveBeenCalledTimes(1);
+      expect((spy.mock.calls[0] as any[])[0].flag_key).toEqual('sdk-ci-test');
+      expect((spy.mock.calls[0] as any[])[0].variant).toBeUndefined();
+    });
+  });
+
+  describe('initial variants source', () => {
+    test('variant accessed from initial variants primary', async () => {
+      const user = { user_id: 'test_user' };
+      const exposureTrackingProvider = new TestExposureTrackingProvider();
+      const spy = jest.spyOn(exposureTrackingProvider, 'track');
+      const client = new ExperimentClient(API_KEY, {
+        exposureTrackingProvider: exposureTrackingProvider,
+        source: Source.InitialVariants,
+        fetchOnStart: true,
+        initialVariants: {
+          'sdk-ci-test': { key: 'initial', value: 'initial' },
+        },
+        fallbackVariant: { key: 'fallback', value: 'fallback' },
+      });
+      // Start and fetch
+      await client.start(user);
+      // Variant is result of fetch
+      const variant = client.variant('sdk-ci-test');
+      expect(variant).toEqual({ key: 'initial', value: 'initial' });
+      expect(spy).toHaveBeenCalledTimes(1);
+      expect((spy.mock.calls[0] as any[])[0].flag_key).toEqual('sdk-ci-test');
+      expect((spy.mock.calls[0] as any[])[0].variant).toEqual('initial');
+    });
+
+    test('variant accessed from local storage secondary', async () => {
+      const user = { user_id: 'test_user' };
+      const exposureTrackingProvider = new TestExposureTrackingProvider();
+      const spy = jest.spyOn(exposureTrackingProvider, 'track');
+      const client = new ExperimentClient(API_KEY, {
+        exposureTrackingProvider: exposureTrackingProvider,
+        source: Source.InitialVariants,
+        fetchOnStart: true,
+        initialVariants: {
+          'sdk-ci-test-not-selected': { key: 'initial', value: 'initial' },
+        },
+        fallbackVariant: { key: 'fallback', value: 'fallback' },
+      });
+      // Start and fetch
+      await client.start(user);
+      // Variant is result of inline fallback string
+      const variantString = client.variant('sdk-ci-test', 'inline');
+      expect(variantString).toEqual({
+        key: 'on',
+        value: 'on',
+        payload: 'payload',
+      });
+      expect(spy).toHaveBeenCalledTimes(1);
+      expect((spy.mock.calls[0] as any[])[0].flag_key).toEqual('sdk-ci-test');
+      expect((spy.mock.calls[0] as any[])[0].variant).toEqual('on');
+    });
+
+    test('variant accessed from inline fallback', async () => {
+      const user = {};
+      const exposureTrackingProvider = new TestExposureTrackingProvider();
+      const spy = jest.spyOn(exposureTrackingProvider, 'track');
+      const client = new ExperimentClient(API_KEY, {
+        exposureTrackingProvider: exposureTrackingProvider,
+        source: Source.InitialVariants,
+        fetchOnStart: true,
+        initialVariants: {
+          'sdk-ci-test-not-selected': { key: 'initial', value: 'initial' },
+        },
+        fallbackVariant: { key: 'fallback', value: 'fallback' },
+      });
+      // Start and fetch
+      await client.start(user);
+      // Variant is result of inline fallback string
+      const variantString = client.variant('sdk-ci-test', 'inline');
+      expect(variantString).toEqual({ key: 'inline', value: 'inline' });
+      // Variant is result of inline fallback object
+      const variantObject = client.variant('sdk-ci-test', { value: 'inline' });
+      expect(variantObject).toEqual({ value: 'inline' });
+      expect(spy).toHaveBeenCalledTimes(1);
+      expect((spy.mock.calls[0] as any[])[0].flag_key).toEqual('sdk-ci-test');
+      expect((spy.mock.calls[0] as any[])[0].variant).toBeUndefined();
+    });
+
+    test('variant accessed from configured fallback when no initial variants or explicit fallback provided', async () => {
+      const user = {};
+      const exposureTrackingProvider = new TestExposureTrackingProvider();
+      const spy = jest.spyOn(exposureTrackingProvider, 'track');
+      const client = new ExperimentClient(API_KEY, {
+        exposureTrackingProvider: exposureTrackingProvider,
+        source: Source.InitialVariants,
+        fetchOnStart: true,
+        initialVariants: {
+          'sdk-ci-test-not-selected': { key: 'initial', value: 'initial' },
+        },
+        fallbackVariant: { key: 'fallback', value: 'fallback' },
+      });
+      // Start and fetch
+      await client.start(user);
+      const variant = client.variant('sdk-ci-test');
+      // Variant is result of fallbackVariant
+      expect(variant).toEqual({ key: 'fallback', value: 'fallback' });
+      expect(spy).toHaveBeenCalledTimes(1);
+      expect((spy.mock.calls[0] as any[])[0].flag_key).toEqual('sdk-ci-test');
+      expect((spy.mock.calls[0] as any[])[0].variant).toBeUndefined();
+    });
+
+    test('default variant returned when no other fallback is provided', async () => {
+      const user = {};
+      const exposureTrackingProvider = new TestExposureTrackingProvider();
+      const spy = jest.spyOn(exposureTrackingProvider, 'track');
+      const client = new ExperimentClient(API_KEY, {
+        exposureTrackingProvider: exposureTrackingProvider,
+        source: Source.InitialVariants,
+        fetchOnStart: true,
+        initialVariants: {
+          'sdk-ci-test-not-selected': { key: 'initial', value: 'initial' },
+        },
+      });
+      // Start and fetch
+      await client.start(user);
+      const variant = client.variant('sdk-ci-test');
+      expect(variant).toEqual({
+        key: 'off',
+        metadata: { default: true },
+      });
+      expect(spy).toHaveBeenCalledTimes(1);
+      expect((spy.mock.calls[0] as any[])[0].flag_key).toEqual('sdk-ci-test');
+      expect((spy.mock.calls[0] as any[])[0].variant).toBeUndefined();
+    });
+  });
+
+  describe('local evaluation flags', () => {
+    test('returns locally evaluated variant over remote and all other fallbacks', async () => {
+      const user = { device_id: '0123456789' };
+      const exposureTrackingProvider = new TestExposureTrackingProvider();
+      const spy = jest.spyOn(exposureTrackingProvider, 'track');
+      const client = new ExperimentClient(API_KEY, {
+        exposureTrackingProvider: exposureTrackingProvider,
+        source: Source.LocalStorage,
+        fetchOnStart: true,
+        initialVariants: {
+          'sdk-ci-test-local': { key: 'initial', value: 'initial' },
+        },
+        fallbackVariant: { key: 'fallback', value: 'fallback' },
+      });
+      // Start and fetch
+      await client.start(user);
+      const variant = client.variant('sdk-ci-test-local', 'inline');
+      expect(variant.key).toEqual('on');
+      expect(variant.value).toEqual('on');
+      expect(variant.metadata.evaluationMode).toEqual('local');
+      expect(spy).toHaveBeenCalledTimes(1);
+      expect((spy.mock.calls[0] as any[])[0].flag_key).toEqual(
+        'sdk-ci-test-local',
+      );
+      expect((spy.mock.calls[0] as any[])[0].variant).toEqual('on');
+    });
+
+    test('locally evaluated default variant with inline fallback', async () => {
+      const user = {};
+      const exposureTrackingProvider = new TestExposureTrackingProvider();
+      const spy = jest.spyOn(exposureTrackingProvider, 'track');
+      const client = new ExperimentClient(API_KEY, {
+        exposureTrackingProvider: exposureTrackingProvider,
+        source: Source.LocalStorage,
+        fetchOnStart: true,
+        initialVariants: {
+          'sdk-ci-test-local': { key: 'initial', value: 'initial' },
+        },
+        fallbackVariant: { key: 'fallback', value: 'fallback' },
+      });
+      // Start and fetch
+      await client.start(user);
+      const variant = client.variant('sdk-ci-test-local', 'inline');
+      expect(variant.key).toEqual('inline');
+      expect(variant.value).toEqual('inline');
+      expect(spy).toHaveBeenCalledTimes(1);
+      expect((spy.mock.calls[0] as any[])[0].flag_key).toEqual(
+        'sdk-ci-test-local',
+      );
+      expect((spy.mock.calls[0] as any[])[0].variant).toBeUndefined();
+    });
+
+    test('locally evaluated default variant with initial variants', async () => {
+      const user = {};
+      const exposureTrackingProvider = new TestExposureTrackingProvider();
+      const spy = jest.spyOn(exposureTrackingProvider, 'track');
+      const client = new ExperimentClient(API_KEY, {
+        exposureTrackingProvider: exposureTrackingProvider,
+        source: Source.LocalStorage,
+        fetchOnStart: true,
+        initialVariants: {
+          'sdk-ci-test-local': { key: 'initial', value: 'initial' },
+        },
+        fallbackVariant: { key: 'fallback', value: 'fallback' },
+      });
+      // Start and fetch
+      await client.start(user);
+      const variant = client.variant('sdk-ci-test-local');
+      expect(variant.key).toEqual('initial');
+      expect(variant.value).toEqual('initial');
+      expect(spy).toHaveBeenCalledTimes(1);
+      expect((spy.mock.calls[0] as any[])[0].flag_key).toEqual(
+        'sdk-ci-test-local',
+      );
+      expect((spy.mock.calls[0] as any[])[0].variant).toBeUndefined();
+    });
+
+    test('locally evaluated default variant with configured fallback', async () => {
+      const user = {};
+      const exposureTrackingProvider = new TestExposureTrackingProvider();
+      const spy = jest.spyOn(exposureTrackingProvider, 'track');
+      const client = new ExperimentClient(API_KEY, {
+        exposureTrackingProvider: exposureTrackingProvider,
+        source: Source.LocalStorage,
+        fetchOnStart: true,
+        initialVariants: {
+          'sdk-ci-test-local-not-selected': {
+            key: 'initial',
+            value: 'initial',
+          },
+        },
+        fallbackVariant: { key: 'fallback', value: 'fallback' },
+      });
+      // Start and fetch
+      await client.start(user);
+      const variant = client.variant('sdk-ci-test-local');
+      expect(variant.key).toEqual('fallback');
+      expect(variant.value).toEqual('fallback');
+      expect(spy).toHaveBeenCalledTimes(1);
+      expect((spy.mock.calls[0] as any[])[0].flag_key).toEqual(
+        'sdk-ci-test-local',
+      );
+      expect((spy.mock.calls[0] as any[])[0].variant).toBeUndefined();
+    });
+
+    test('default variant returned when no other fallback is provided', async () => {
+      const user = {};
+      const exposureTrackingProvider = new TestExposureTrackingProvider();
+      const spy = jest.spyOn(exposureTrackingProvider, 'track');
+      const client = new ExperimentClient(API_KEY, {
+        exposureTrackingProvider: exposureTrackingProvider,
+        source: Source.LocalStorage,
+        fetchOnStart: true,
+      });
+      // Start and fetch
+      await client.start(user);
+      const variant = client.variant('sdk-ci-test-local');
+      expect(variant.key).toEqual('off');
+      expect(variant.value).toBeUndefined();
+      expect(spy).toHaveBeenCalledTimes(1);
+      expect((spy.mock.calls[0] as any[])[0].flag_key).toEqual(
+        'sdk-ci-test-local',
+      );
+      expect((spy.mock.calls[0] as any[])[0].variant).toBeUndefined();
+    });
+
+    test('all returns local evaluation variant over remote or initialVariants with local storage source', async () => {
+      const user = { user_id: 'test_user', device_id: '0123456789' };
+      const client = new ExperimentClient(API_KEY, {
+        source: Source.LocalStorage,
+        fetchOnStart: true,
+        initialVariants: {
+          'sdk-ci-test': { key: 'initial', value: 'initial' },
+          'sdk-ci-test-local': { key: 'initial', value: 'initial' },
+        },
+      });
+      // Start and fetch
+      await client.start(user);
+      const allVariants = client.all();
+      const localVariant = allVariants['sdk-ci-test-local'];
+      expect(localVariant.key).toEqual('on');
+      expect(localVariant.value).toEqual('on');
+      expect(localVariant.metadata?.evaluationMode).toEqual('local');
+      const remoteVariant = allVariants['sdk-ci-test'];
+      expect(remoteVariant.key).toEqual('on');
+      expect(remoteVariant.value).toEqual('on');
+    });
+    test('all returns local evaluation variant over remote or initialVariants with initial variants source', async () => {
+      const user = { user_id: 'test_user', device_id: '0123456789' };
+      const client = new ExperimentClient(API_KEY, {
+        source: Source.InitialVariants,
+        fetchOnStart: true,
+        initialVariants: {
+          'sdk-ci-test': { key: 'initial', value: 'initial' },
+          'sdk-ci-test-local': { key: 'initial', value: 'initial' },
+        },
+      });
+      // Start and fetch
+      await client.start(user);
+      const allVariants = client.all();
+      const localVariant = allVariants['sdk-ci-test-local'];
+      expect(localVariant.key).toEqual('on');
+      expect(localVariant.value).toEqual('on');
+      expect(localVariant.metadata?.evaluationMode).toEqual('local');
+      const remoteVariant = allVariants['sdk-ci-test'];
+      expect(remoteVariant.key).toEqual('initial');
+      expect(remoteVariant.value).toEqual('initial');
+    });
+  });
+});
+
+describe('start', () => {
+  test('with local and remote evaluation, calls fetch', async () => {
+    const client = new ExperimentClient(API_KEY, {});
+    const fetchSpy = jest.spyOn(client, 'fetch');
+    await client.start();
+    expect(fetchSpy).toBeCalledTimes(1);
+  }, 10000);
+  test('with local evaluation only, does not call fetch', async () => {
+    const client = new ExperimentClient(API_KEY, {});
+    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+    // @ts-ignore
+    client.flags.getAll = () => {
+      return {};
+    };
+    const fetchSpy = jest.spyOn(client, 'fetch');
+    await client.start();
+    expect(fetchSpy).toBeCalledTimes(0);
+  });
+
+  test('with local evaluation only, fetchOnStart enabled, calls fetch', async () => {
+    const client = new ExperimentClient(API_KEY, {
+      fetchOnStart: true,
+    });
+    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+    // @ts-ignore
+    client.flags.getAll = () => {
+      return {};
+    };
+    const fetchSpy = jest.spyOn(client, 'fetch');
+    await client.start();
+    expect(fetchSpy).toBeCalledTimes(1);
+  });
+
+  test('with local and remote evaluation, fetchOnStart disabled, does not call fetch', async () => {
+    const client = new ExperimentClient(API_KEY, {
+      fetchOnStart: false,
+    });
+    const fetchSpy = jest.spyOn(client, 'fetch');
+    await client.start();
+    expect(fetchSpy).toBeCalledTimes(0);
+  });
 });

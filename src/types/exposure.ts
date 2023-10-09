@@ -11,7 +11,7 @@
  *   "event_properties": {
  *     "flag_key": "<flagKey>",
  *     "variant": "<variant>",
- *     "experiment_key": "<expKey>",
+ *     "experiment_key": "<expKey>"
  *   }
  * }
  * ```
@@ -40,6 +40,11 @@ export type Exposure = {
    * experiments associated with the same flag.
    */
   experiment_key?: string;
+  /**
+   * (Optional) Flag, segment, and variant metadata produced as a result of
+   * evaluation for the user. Used for system purposes.
+   */
+  metadata?: Record<string, unknown>;
 };
 
 /**
@@ -47,8 +52,7 @@ export type Exposure = {
  * {@link ExperimentClient}.
  *
  * If you're using the Amplitude Analytics SDK for tracking you do not need
- * to implement this interface. Simply upgrade your analytics SDK version to
- * 2.36.0+ and initialize experiment using the
+ * to implement this interface. Simply initialize experiment using the
  * {@link Experiment.initializeWithAmplitudeAnalytics} function.
  *
  * If you're using a 3rd party analytics implementation then you'll need to
@@ -60,7 +64,8 @@ export type Exposure = {
  *   "event_type": "$exposure",
  *   "event_properties": {
  *     "flag_key": "<flagKey>",
- *     "variant": "<variant>"
+ *     "variant": "<variant>",
+ *     "experiment_key": "<expKey>"
  *   }
  * }
  * ```
