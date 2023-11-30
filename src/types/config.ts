@@ -37,6 +37,12 @@ export interface ExperimentConfig {
   initialVariants?: Variants;
 
   /**
+   * Initial values for flags.
+   */
+
+  initialFlags?: string;
+
+  /**
    * Determines the primary source of variants and variants before falling back.
    * @see Source
    */
@@ -136,6 +142,7 @@ export interface ExperimentConfig {
  | **instanceName** | `$default_instance` |
  | **fallbackVariant**         | `null`                 |
  | **initialVariants**         | `null`                 |
+ | **initialFlags**         | `null`                 |
  | **source** | `Source.LocalStorage` |
  | **serverUrl**    | `"https://api.lab.amplitude.com"` |
  | **flagsServerUrl**    | `"https://flag.lab.amplitude.com"` |
@@ -158,6 +165,7 @@ export const Defaults: ExperimentConfig = {
   instanceName: '$default_instance',
   fallbackVariant: {},
   initialVariants: {},
+  initialFlags: null,
   source: Source.LocalStorage,
   serverUrl: 'https://api.lab.amplitude.com',
   flagsServerUrl: 'https://flag.lab.amplitude.com',

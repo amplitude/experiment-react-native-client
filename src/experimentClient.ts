@@ -140,6 +140,7 @@ export class ExperimentClient implements Client {
     void this.flags.load();
     // eslint-disable-next-line no-void
     void this.variants.load();
+    this.mergeInitialFlagsWithStorage();
   }
 
   /**
@@ -371,6 +372,17 @@ export class ExperimentClient implements Client {
   public setUserProvider(userProvider: ExperimentUserProvider): Client {
     this.defaultUserProvider.baseProvider = userProvider;
     return this;
+  }
+
+  private mergeInitialFlagsWithStorage(): void {
+    if (this.config.initialFlags) {
+      const initialFlags = JSON.parse(this.config.initialFlags);
+      for (const key in initialFlags) {
+        if (!this.flags.get(initialFlags[key].key)) {
+          this.flags.put(initialFlags[key].key, initialFlags[key]);
+        }
+      }
+    }
   }
 
   private evaluate(flagKeys?: string[]): Variants {
@@ -653,6 +665,7 @@ export class ExperimentClient implements Client {
     this.flags.clear();
     this.flags.putAll(flags);
     await this.flags.store();
+    this.mergeInitialFlagsWithStorage();
   }
 
   private async storeVariants(
