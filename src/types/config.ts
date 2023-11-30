@@ -37,9 +37,9 @@ export interface ExperimentConfig {
   initialVariants?: Variants;
 
   /**
-   * Initial values for flags.
+   * Initial values for flags. This is useful for bootstrapping the
+   * client with fallbacks for flag configs.
    */
-
   initialFlags?: string;
 
   /**
