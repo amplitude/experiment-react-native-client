@@ -137,7 +137,7 @@ export class ExperimentClient implements Client {
     );
     this.flags = getFlagStorage(this.apiKey, this.config.instanceName, storage);
     // eslint-disable-next-line no-void
-    void this.flags.load();
+    void this.flags.load(this.getInitialFlags());
     // eslint-disable-next-line no-void
     void this.variants.load();
     this.mergeInitialFlagsWithStorage();
@@ -374,9 +374,16 @@ export class ExperimentClient implements Client {
     return this;
   }
 
+  private getInitialFlags(): Record<string, EvaluationFlag> {
+    if (this.config.initialFlags) {
+      return JSON.parse(this.config.initialFlags);
+    }
+    return [];
+  }
+
   private mergeInitialFlagsWithStorage(): void {
     if (this.config.initialFlags) {
-      const initialFlags = JSON.parse(this.config.initialFlags);
+      const initialFlags = this.getInitialFlags();
       initialFlags.forEach((flag: EvaluationFlag) => {
         if (!this.flags.get(flag.key)) {
           this.flags.put(flag.key, flag);
@@ -415,8 +422,6 @@ export class ExperimentClient implements Client {
     }
     return sourceVariant;
   }
-
-  // TODO variant and source for both local and remote needs to be cleaned up.
 
   /**
    * This function assumes the flag exists and is local evaluation mode. For
