@@ -48,7 +48,7 @@
   },
   "dependencies": {
     "@amplitude/analytics-connector": "^1.4.7",
-    "@amplitude/experiment-core": "^0.7.0",
+    "@amplitude/experiment-core": "^0.7.2",
     "@react-native-async-storage/async-storage": "^1.17.6",
     "unfetch": "^4.2.0"
   },
