@@ -14,10 +14,10 @@
   dependencies:
     "@amplitude/ua-parser-js" "^0.7.31"
 
-"@amplitude/experiment-core@^0.7.0":
-  version "0.7.0"
-  resolved "https://registry.yarnpkg.com/@amplitude/experiment-core/-/experiment-core-0.7.0.tgz#258d95d691461acf3b6d1bea430f5ba231986342"
-  integrity sha512-/W+BFGc2qix4aZ9V4VEYDcot8Vk/YirRcqY9Y0hlB27NPnhke0Id5mgPl/puKy7wqbXC6yTuda7rVpAtGBFMOA==
+"@amplitude/experiment-core@^0.7.2":
+  version "0.7.2"
+  resolved "https://registry.yarnpkg.com/@amplitude/experiment-core/-/experiment-core-0.7.2.tgz#f94219d68d86322e8d580c8fbe0672dcd29f86bb"
+  integrity sha512-Wc2NWvgQ+bLJLeF0A9wBSPIaw0XuqqgkPKsoNFQrmS7r5Djd56um75In05tqmVntPJZRvGKU46pAp8o5tdf4mA==
   dependencies:
     js-base64 "^3.7.5"
 

@@ -8,6 +8,7 @@ import {
   EvaluationApi,
   EvaluationEngine,
   EvaluationFlag,
+  FetchError,
   FlagApi,
   Poller,
   SdkFlagApi,
@@ -607,7 +608,7 @@ export class ExperimentClient implements Client {
 
     this.debug(`[Experiment] Fetch all: retry=${retry}`);
 
-    // Proactively cancel retries if active in order to avoid unecessary API
+    // Proactively cancel retries if active in order to avoid unnecessary API
     // requests. A new failure will restart the retries.
     if (retry) {
       this.stopRetries();
@@ -618,7 +619,7 @@ export class ExperimentClient implements Client {
       await this.storeVariants(variants, options);
       return variants;
     } catch (e) {
-      if (retry) {
+      if (retry && this.shouldRetryFetch(e)) {
         this.startRetries(user, options);
       }
       throw e;
@@ -779,6 +780,13 @@ export class ExperimentClient implements Client {
     if (this.config.debug) {
       console.debug(message, ...optionalParams);
     }
+  }
+
+  private shouldRetryFetch(e: Error): boolean {
+    if (e instanceof FetchError) {
+      return e.statusCode < 400 || e.statusCode >= 500 || e.statusCode === 429;
+    }
+    return true;
   }
 }
 
