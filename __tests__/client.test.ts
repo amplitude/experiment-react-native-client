@@ -974,7 +974,7 @@ describe('start', () => {
 
   test('initial flags', async () => {
     // Flag, sdk-ci-test-local is modified to always return off
-    const client = new ExperimentClient(API_KEY, {
+    let client = new ExperimentClient(API_KEY, {
       fetchOnStart: false,
       initialFlags: `
       [
@@ -983,6 +983,7 @@ describe('start', () => {
   ]
     `.trim(),
     });
+    client = await client.ready();
     const user: ExperimentUser = { user_id: 'user_id', device_id: 'device_id' };
     client.setUser(user);
     let variant = client.variant('sdk-ci-test-local');

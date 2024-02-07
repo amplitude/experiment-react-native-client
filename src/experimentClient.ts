@@ -78,6 +78,7 @@ export class ExperimentClient implements Client {
     flagPollerIntervalMillis,
   );
   private isRunning = false;
+  private readonly flagsAndVariantsLoadedPromise: Promise<void>[] | undefined;
 
   /**
    * Creates a new ExperimentClient instance.
@@ -136,10 +137,18 @@ export class ExperimentClient implements Client {
       storage,
     );
     this.flags = getFlagStorage(this.apiKey, this.config.instanceName, storage);
-    // eslint-disable-next-line no-void
-    void this.flags.load(this.getInitialFlags());
-    // eslint-disable-next-line no-void
-    void this.variants.load();
+    this.flagsAndVariantsLoadedPromise = [
+      this.flags.load(this.getInitialFlags()),
+      this.variants.load(),
+    ];
+  }
+
+  /**
+   * Call to ensure the completion of the loading variants and flags from localStorage upon initialization.
+   */
+  public async ready(): Promise<ExperimentClient> {
+    await Promise.all(this.flagsAndVariantsLoadedPromise);
+    return this;
   }
 
   /**
@@ -380,6 +389,7 @@ export class ExperimentClient implements Client {
       initialFlags.forEach((flag: EvaluationFlag) => {
         flagsMap[flag.key] = flag;
       });
+      return flagsMap;
     }
     return {};
   }
