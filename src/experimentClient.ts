@@ -79,6 +79,8 @@ export class ExperimentClient implements Client {
     flagPollerIntervalMillis,
   );
   private isRunning = false;
+  private readonly flagsAndVariantsLoadedPromise: Promise<void>[] | undefined;
+  private readonly initialFlags: EvaluationFlag[] | undefined;
 
   /**
    * Creates a new ExperimentClient instance.
@@ -137,10 +139,21 @@ export class ExperimentClient implements Client {
       storage,
     );
     this.flags = getFlagStorage(this.apiKey, this.config.instanceName, storage);
-    // eslint-disable-next-line no-void
-    void this.flags.load();
-    // eslint-disable-next-line no-void
-    void this.variants.load();
+    if (this.config.initialFlags) {
+      this.initialFlags = JSON.parse(this.config.initialFlags);
+    }
+    this.flagsAndVariantsLoadedPromise = [
+      this.flags.load(this.convertInitialFlagsForStorage()),
+      this.variants.load(),
+    ];
+  }
+
+  /**
+   * Call to ensure the completion of the loading variants and flags from localStorage upon initialization.
+   */
+  public async cacheReady(): Promise<ExperimentClient> {
+    await Promise.all(this.flagsAndVariantsLoadedPromise);
+    return this;
   }
 
   /**
@@ -374,6 +387,27 @@ export class ExperimentClient implements Client {
     return this;
   }
 
+  private convertInitialFlagsForStorage(): Record<string, EvaluationFlag> {
+    if (this.initialFlags) {
+      const flagsMap: Record<string, EvaluationFlag> = {};
+      this.initialFlags.forEach((flag: EvaluationFlag) => {
+        flagsMap[flag.key] = flag;
+      });
+      return flagsMap;
+    }
+    return {};
+  }
+
+  private mergeInitialFlagsWithStorage(): void {
+    if (this.initialFlags) {
+      this.initialFlags.forEach((flag: EvaluationFlag) => {
+        if (!this.flags.get(flag.key)) {
+          this.flags.put(flag.key, flag);
+        }
+      });
+    }
+  }
+
   private evaluate(flagKeys?: string[]): Variants {
     const user = this.addContextSync(this.user);
     const flags = topologicalSort(this.flags.getAll(), flagKeys);
@@ -404,8 +438,6 @@ export class ExperimentClient implements Client {
     }
     return sourceVariant;
   }
-
-  // TODO variant and source for both local and remote needs to be cleaned up.
 
   /**
    * This function assumes the flag exists and is local evaluation mode. For
@@ -654,6 +686,7 @@ export class ExperimentClient implements Client {
     this.flags.clear();
     this.flags.putAll(flags);
     await this.flags.store();
+    this.mergeInitialFlagsWithStorage();
   }
 
   private async storeVariants(

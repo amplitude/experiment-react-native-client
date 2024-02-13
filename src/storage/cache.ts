@@ -71,7 +71,7 @@ export class LoadStoreCache<V> {
     this.cache = {};
   }
 
-  public async load(): Promise<void> {
+  public async load(initialValues?: Record<string, V>): Promise<void> {
     const rawValues = await this.storage.get(this.namespace);
     let jsonValues: Record<string, unknown>;
     try {
@@ -97,6 +97,9 @@ export class LoadStoreCache<V> {
       }
     }
     this.clear();
+    if (initialValues) {
+      this.putAll(initialValues);
+    }
     this.putAll(values);
   }
 

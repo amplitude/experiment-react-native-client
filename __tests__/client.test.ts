@@ -958,6 +958,56 @@ describe('start', () => {
     await client.start();
     expect(fetchSpy).toBeCalledTimes(0);
   });
+
+  test('with local evaluation only, fetchOnStart enabled, calls fetch', async () => {
+    const client = new ExperimentClient(API_KEY, {
+      fetchOnStart: true,
+    });
+    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+    // @ts-ignore
+    client.flags.getAll = () => {
+      return {};
+    };
+    const fetchSpy = jest.spyOn(client, 'fetch');
+    await client.start();
+    expect(fetchSpy).toBeCalledTimes(1);
+  });
+
+  test('initial flags', async () => {
+    // Flag, sdk-ci-test-local is modified to always return off
+    let client = new ExperimentClient(API_KEY, {
+      fetchOnStart: false,
+      initialFlags: `
+      [
+        {"key":"sdk-ci-test-local","metadata":{"deployed":true,"evaluationMode":"local","flagType":"release","flagVersion":1},"segments":[{"metadata":{"segmentName":"All Other Users"},"variant":"off"}],"variants":{"off":{"key":"off","metadata":{"default":true}},"on":{"key":"on","value":"on"}}},
+    {"key":"sdk-ci-test-local-2","metadata":{"deployed":true,"evaluationMode":"local","flagType":"release","flagVersion":1},"segments":[{"metadata":{"segmentName":"All Other Users"},"variant":"on"}],"variants":{"off":{"key":"off","metadata":{"default":true}},"on":{"key":"on","value":"on"}}}
+  ]
+    `.trim(),
+    });
+    client = await client.cacheReady();
+    const user: ExperimentUser = { user_id: 'user_id', device_id: 'device_id' };
+    client.setUser(user);
+    let variant = client.variant('sdk-ci-test-local');
+    let variant2 = client.variant('sdk-ci-test-local-2');
+    expect(variant.key).toEqual('off');
+    expect(variant2.key).toEqual('on');
+    // Call start to update the flag, overwrites the initial flag to return on
+    await client.start(user);
+    variant = client.variant('sdk-ci-test-local');
+    variant2 = client.variant('sdk-ci-test-local-2');
+    expect(variant.key).toEqual('on');
+    expect(variant2.key).toEqual('on');
+    // Initialize a second client with the same storage to simulate an app restart
+    const client2 = new ExperimentClient(API_KEY, {
+      fetchOnStart: false,
+    });
+    client2.setUser(user);
+    // Storage flag should take precedent over initial flag
+    variant = client.variant('sdk-ci-test-local');
+    variant2 = client.variant('sdk-ci-test-local-2');
+    expect(variant.key).toEqual('on');
+    expect(variant2.key).toEqual('on');
+  });
 });
 
 describe('fetch retry with different response codes', () => {
