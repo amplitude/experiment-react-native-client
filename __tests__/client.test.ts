@@ -983,7 +983,7 @@ describe('start', () => {
   ]
     `.trim(),
     });
-    client = await client.ready();
+    client = await client.cacheReady();
     const user: ExperimentUser = { user_id: 'user_id', device_id: 'device_id' };
     client.setUser(user);
     let variant = client.variant('sdk-ci-test-local');

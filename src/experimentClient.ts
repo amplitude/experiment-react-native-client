@@ -79,6 +79,7 @@ export class ExperimentClient implements Client {
   );
   private isRunning = false;
   private readonly flagsAndVariantsLoadedPromise: Promise<void>[] | undefined;
+  private readonly initialFlags: EvaluationFlag[] | undefined;
 
   /**
    * Creates a new ExperimentClient instance.
@@ -137,8 +138,11 @@ export class ExperimentClient implements Client {
       storage,
     );
     this.flags = getFlagStorage(this.apiKey, this.config.instanceName, storage);
+    if (this.config.initialFlags) {
+      this.initialFlags = JSON.parse(this.config.initialFlags);
+    }
     this.flagsAndVariantsLoadedPromise = [
-      this.flags.load(this.getInitialFlags()),
+      this.flags.load(this.convertInitialFlagsForStorage()),
       this.variants.load(),
     ];
   }
@@ -146,7 +150,7 @@ export class ExperimentClient implements Client {
   /**
    * Call to ensure the completion of the loading variants and flags from localStorage upon initialization.
    */
-  public async ready(): Promise<ExperimentClient> {
+  public async cacheReady(): Promise<ExperimentClient> {
     await Promise.all(this.flagsAndVariantsLoadedPromise);
     return this;
   }
@@ -382,11 +386,10 @@ export class ExperimentClient implements Client {
     return this;
   }
 
-  private getInitialFlags(): Record<string, EvaluationFlag> {
-    if (this.config.initialFlags) {
-      const initialFlags = JSON.parse(this.config.initialFlags);
+  private convertInitialFlagsForStorage(): Record<string, EvaluationFlag> {
+    if (this.initialFlags) {
       const flagsMap: Record<string, EvaluationFlag> = {};
-      initialFlags.forEach((flag: EvaluationFlag) => {
+      this.initialFlags.forEach((flag: EvaluationFlag) => {
         flagsMap[flag.key] = flag;
       });
       return flagsMap;
@@ -395,9 +398,8 @@ export class ExperimentClient implements Client {
   }
 
   private mergeInitialFlagsWithStorage(): void {
-    if (this.config.initialFlags) {
-      const initialFlags = JSON.parse(this.config.initialFlags);
-      initialFlags.forEach((flag: EvaluationFlag) => {
+    if (this.initialFlags) {
+      this.initialFlags.forEach((flag: EvaluationFlag) => {
         if (!this.flags.get(flag.key)) {
           this.flags.put(flag.key, flag);
         }
