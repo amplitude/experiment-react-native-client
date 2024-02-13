@@ -131,6 +131,11 @@ export interface ExperimentConfig {
    * (Advanced) Use your own http client.
    */
   httpClient?: HttpClient;
+
+  /**
+   * The Experiment deployment key. If provided, it will be used instead of the project API key
+   */
+  deploymentKey?: string;
 }
 
 /**
@@ -156,6 +161,7 @@ export interface ExperimentConfig {
  | **userProvider**    | `null` |
  | **analyticsProvider**    | `null` |
  | **exposureTrackingProvider**    | `null` |
+ | **deploymentKey**    | `undefined` |
 
  *
  * @category Configuration
@@ -179,4 +185,5 @@ export const Defaults: ExperimentConfig = {
   userProvider: null,
   exposureTrackingProvider: null,
   httpClient: FetchHttpClient,
+  deploymentKey: undefined,
 };
