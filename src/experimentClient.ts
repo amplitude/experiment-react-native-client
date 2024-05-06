@@ -241,7 +241,7 @@ export class ExperimentClient implements Client {
         options,
       );
     } catch (e) {
-      console.error(e);
+      console.warn(e);
     }
     return this;
   }
