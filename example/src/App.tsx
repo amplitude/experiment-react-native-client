@@ -5,7 +5,7 @@ import {
   Variants,
 } from '@amplitude/experiment-react-native-client';
 import * as React from 'react';
-import { StyleSheet, View, Text } from 'react-native';
+import { StyleSheet, Text, View } from 'react-native';
 
 export default function App() {
   const [variant, setVariant] = React.useState<Variant | undefined>();
