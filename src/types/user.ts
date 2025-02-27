@@ -89,6 +89,11 @@ export type ExperimentUser = {
   library?: string;
 
   /**
+   * Predefined field, can be manually provided
+   */
+  ip_address?: string;
+
+  /**
    * Custom user properties
    */
   user_properties?: {
