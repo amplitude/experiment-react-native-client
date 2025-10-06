@@ -33,8 +33,13 @@ jobs:
     - name: Install
       run: yarn install --frozen-lockfile
 
-    - name: Build
+    - name: Build (ubuntu)
+      if: ${{ matrix.os == 'ubuntu-latest' }}
       run: yarn
+
+    - name: Build (macos)
+      if: ${{ matrix.os == 'macos-latest' }}
+      run: CURRENT_ARCH=arm64 yarn
 
     - name: Test
       run: yarn test
