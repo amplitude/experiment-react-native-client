@@ -406,6 +406,7 @@ export class ExperimentClient implements Client {
       ...this.fetchVariantsOptions.get(),
       trackingOption: doTrack ? 'track' : 'no-track',
     });
+    // No need to wait for persistence to complete.
     this.fetchVariantsOptions.store();
   }
 

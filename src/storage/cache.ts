@@ -66,7 +66,13 @@ export class SingleValueStoreCache<V> {
   }
 
   public async store(): Promise<void> {
-    await this.storage.put(this.namespace, JSON.stringify(this.value));
+    if (this.value === undefined) {
+      // Delete the key if the value is undefined
+      await this.storage.delete(this.namespace);
+    } else {
+      // Also store false or null values
+      await this.storage.put(this.namespace, JSON.stringify(this.value));
+    }
   }
 }
 
