@@ -2,6 +2,7 @@ import { FetchHttpClient } from '../transport/http';
 
 import { ExposureTrackingProvider } from './exposure';
 import { Source } from './source';
+import { Storage } from './storage';
 import { HttpClient } from './transport';
 import { ExperimentUserProvider } from './user';
 import { Variant, Variants } from './variant';
@@ -131,6 +132,12 @@ export interface ExperimentConfig {
    * (Advanced) Use your own http client.
    */
   httpClient?: HttpClient;
+
+  /**
+   * Custom storage implementation. By default, AsyncStorage is used.
+   * Implement the Storage interface to use a different storage mechanism.
+   */
+  storage?: Storage;
 }
 
 /**
@@ -156,6 +163,7 @@ export interface ExperimentConfig {
  | **userProvider**    | `null` |
  | **analyticsProvider**    | `null` |
  | **exposureTrackingProvider**    | `null` |
+ | **storage**    | `null` (defaults to AsyncStorage) |
 
  *
  * @category Configuration
@@ -179,4 +187,5 @@ export const Defaults: ExperimentConfig = {
   userProvider: null,
   exposureTrackingProvider: null,
   httpClient: FetchHttpClient,
+  storage: null,
 };
