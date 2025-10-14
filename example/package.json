@@ -4,23 +4,28 @@
   "version": "0.0.1",
   "private": true,
   "scripts": {
-    "android": "react-native run-android",
-    "ios": "react-native run-ios",
+    "android:oldarch": "react-native run-android",
+    "android": "react-native run-android --active-arch-only",
+    "ios:oldarch": "react-native run-ios",
+    "ios": "RCT_NEW_ARCH_ENABLED=1 react-native run-ios",
+    "pods:oldarch": "cd ios && pod install",
+    "pods": "cd ios && RCT_NEW_ARCH_ENABLED=1 pod install",
     "start": "react-native start"
   },
   "dependencies": {
-    "react": "16.13.1",
-    "react-native": "0.63.4",
-    "@types/react": "^16.9.19",
-    "@types/react-native": "0.67.8",
-    "@react-native-async-storage/async-storage": "^1.17.6",
-    "@amplitude/analytics-react-native": "0.0.1-dev.1"
+    "@amplitude/experiment-react-native-client": "../",
+    "@react-native-async-storage/async-storage": "^2.2.0",
+    "react": "18.2.0",
+    "react-native": "0.74.5"
   },
   "devDependencies": {
-    "jetifier": "^2.0.0",
-    "@babel/core": "^7.12.10",
-    "@babel/runtime": "^7.12.5",
-    "babel-plugin-module-resolver": "^4.0.0",
-    "metro-react-native-babel-preset": "^0.64.0"
+    "@babel/core": "^7.20.0",
+    "@babel/preset-env": "^7.20.0",
+    "@babel/runtime": "^7.20.0",
+    "@react-native/babel-preset": "0.74.87",
+    "@react-native/metro-config": "0.74.87",
+    "@react-native/typescript-config": "0.74.87",
+    "babel-plugin-module-resolver": "^5.0.0",
+    "typescript": "^5.0.4"
   }
 }

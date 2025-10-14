@@ -1,4 +1,3 @@
-import { init, track } from '@amplitude/analytics-react-native';
 import {
   Experiment,
   Variant,
@@ -21,10 +20,8 @@ export default function App() {
   const [allVariants, setAllVariants] = React.useState<Variants | undefined>();
   React.useEffect(() => {
     (async () => {
-      await init('a6dd847b9d2f03c816d4f3f8458cdc1d', 'briang123').promise;
-      await track('test');
       if (Experiment) {
-        const experiment = Experiment.initializeWithAmplitudeAnalytics(
+        const experiment = Experiment.initialize(
           'client-IAxMYws9vVQESrrK88aTcToyqMxiiJoR',
           {
             debug: true,
