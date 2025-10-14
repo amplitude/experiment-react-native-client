@@ -7,27 +7,18 @@ import com.facebook.react.bridge.ReactContextBaseJavaModule
 import com.facebook.react.bridge.ReactMethod
 import com.facebook.react.bridge.WritableNativeMap
 
-@ReactModule(name = MODULE_NAME)
 class ExperimentReactNativeClientModule(private val reactContext: ReactApplicationContext) :
     ReactContextBaseJavaModule(reactContext) {
 
-    private val androidContextProvider = AndroidContextProvider(reactContext.applicationContext, false)
+    private val expRnClient = ExperimentReactNativeClientImpl(reactContext)
 
+    @Override
     override fun getName(): String {
-        return MODULE_NAME
+        return ExperimentReactNativeClientImpl.NAME
     }
 
     @ReactMethod
     fun getApplicationContext(promise: Promise) {
-        promise.resolve(WritableNativeMap().apply {
-            putString("version", androidContextProvider.versionName)
-            putString("platform", androidContextProvider.osName)
-            putString("language", androidContextProvider.language)
-            putString("os", androidContextProvider.osName + " "  + androidContextProvider.osVersion)
-            putString("device_brand", androidContextProvider.brand)
-            putString("device_manufacturer", androidContextProvider.manufacturer)
-            putString("device_model", androidContextProvider.model)
-            putString("carrier", androidContextProvider.carrier)
-        })
+        expRnClient.getApplicationContext(promise)
     }
 }
