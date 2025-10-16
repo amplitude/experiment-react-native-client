@@ -5,6 +5,7 @@ import {
 } from '@amplitude/experiment-react-native-client';
 import * as React from 'react';
 import { StyleSheet, View, Text } from 'react-native';
+import { init, track } from '@amplitude/analytics-react-native';
 
 export default function App() {
   const [variant, setVariant] = React.useState<Variant | undefined>();
@@ -20,8 +21,10 @@ export default function App() {
   const [allVariants, setAllVariants] = React.useState<Variants | undefined>();
   React.useEffect(() => {
     (async () => {
+      await init('a6dd847b9d2f03c816d4f3f8458cdc1d', 'briang123').promise;
+      await track('test');
       if (Experiment) {
-        const experiment = Experiment.initialize(
+        const experiment = Experiment.initializeWithAmplitudeAnalytics(
           'client-IAxMYws9vVQESrrK88aTcToyqMxiiJoR',
           {
             debug: true,

@@ -13,6 +13,7 @@
     "start": "react-native start"
   },
   "dependencies": {
+    "@amplitude/analytics-react-native": "^1.5.16",
     "@amplitude/experiment-react-native-client": "../",
     "@react-native-async-storage/async-storage": "^2.0.0",
     "react": "18.2.0",
