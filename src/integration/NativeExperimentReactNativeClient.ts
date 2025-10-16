@@ -14,6 +14,4 @@ export interface Spec extends TurboModule {
   }>;
 }
 
-export default TurboModuleRegistry.get<Spec>(
-  'ExperimentReactNativeClient',
-);
+export default TurboModuleRegistry.get<Spec>('ExperimentReactNativeClient');

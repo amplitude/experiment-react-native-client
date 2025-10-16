@@ -7,8 +7,10 @@ import { Poller } from '@amplitude/experiment-core';
 import { ExperimentUser, ExperimentUserProvider } from '../types/user';
 import { isNative } from '../util/platform';
 
+import NativeExperimentReactNativeClient, {
+  Spec as NativeExperimentReactNativeClientSpec,
+} from './NativeExperimentReactNativeClient';
 import { ConnectorUserProvider } from './connector';
-import NativeExperimentReactNativeClient, { Spec as NativeExperimentReactNativeClientSpec } from './NativeExperimentReactNativeClient';
 
 export class DefaultUserProvider implements ExperimentUserProvider {
   public baseProvider: ExperimentUserProvider | null;
