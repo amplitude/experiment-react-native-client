@@ -19,7 +19,7 @@
   dependencies:
     "@amplitude/analytics-connector" "^1.4.7"
     "@amplitude/experiment-core" "^0.7.2"
-    "@react-native-async-storage/async-storage" "^2.2.0"
+    "@react-native-async-storage/async-storage" "^2.0.0"
     unfetch "^4.2.0"
 
 "@babel/code-frame@^7.0.0", "@babel/code-frame@^7.12.13", "@babel/code-frame@^7.27.1":
@@ -1210,7 +1210,7 @@
     "@nodelib/fs.scandir" "2.1.5"
     fastq "^1.6.0"
 
-"@react-native-async-storage/async-storage@^2.2.0":
+"@react-native-async-storage/async-storage@^2.0.0":
   version "2.2.0"
   resolved "https://registry.yarnpkg.com/@react-native-async-storage/async-storage/-/async-storage-2.2.0.tgz#a3aa565253e46286655560172f4e366e8969f5ad"
   integrity sha512-gvRvjR5JAaUZF8tv2Kcq/Gbt3JHwbKFYfmb445rhOj6NUMx3qPLixmDx5pZAyb9at1bYvJ4/eTUipU5aki45xw==
