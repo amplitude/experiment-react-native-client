@@ -3,23 +3,19 @@ import {
   ApplicationContext,
 } from '@amplitude/analytics-connector';
 import { Poller } from '@amplitude/experiment-core';
-import { NativeModules } from 'react-native';
 
 import { ExperimentUser, ExperimentUserProvider } from '../types/user';
 import { isNative } from '../util/platform';
 
 import { ConnectorUserProvider } from './connector';
-
-export interface ExperimentReactNativeClientModule {
-  getApplicationContext(): Promise<Record<string, string>>;
-}
+import NativeExperimentReactNativeClient, { Spec as NativeExperimentReactNativeClientSpec } from './NativeExperimentReactNativeClient';
 
 export class DefaultUserProvider implements ExperimentUserProvider {
   public baseProvider: ExperimentUserProvider | null;
   private readonly nativeModule:
-    | ExperimentReactNativeClientModule
+    | NativeExperimentReactNativeClientSpec
     | undefined
-    | null = NativeModules.ExperimentReactNativeClient;
+    | null = NativeExperimentReactNativeClient;
   private readonly applicationContext: ApplicationContext;
   public cachedUser: ExperimentUser | undefined;
   public cachedApplicationContext: Record<string, string>;
