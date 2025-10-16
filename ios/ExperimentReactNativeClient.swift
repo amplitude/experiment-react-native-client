@@ -1,5 +1,8 @@
 import Foundation
-import React
+
+#if RCT_NEW_ARCH_ENABLED
+import RNExperimentReactNativeClientSpec
+#endif
 
 @objc(ExperimentReactNativeClient)
 class ExperimentReactNativeClient: NSObject {
@@ -27,3 +30,7 @@ class ExperimentReactNativeClient: NSObject {
         resolve(applicationContext)
     }
 }
+
+#if RCT_NEW_ARCH_ENABLED
+extension ExperimentReactNativeClient: NativeExperimentReactNativeClientSpec {}
+#endif
