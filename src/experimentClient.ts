@@ -653,7 +653,7 @@ export class ExperimentClient implements Client {
 
     try {
       const variants = await this.doFetch(user, timeoutMillis, options);
-      await this.storeVariants(variants, options, sequenceNumber);
+      await this.storeVariants(variants, sequenceNumber, options);
       return variants;
     } catch (e) {
       if (retry && this.shouldRetryFetch(e)) {
@@ -696,14 +696,11 @@ export class ExperimentClient implements Client {
 
   private async storeVariants(
     variants: Variants,
+    sequenceNumber: number,
     options?: FetchOptions,
-    sequenceNumber?: number,
   ): Promise<void> {
     // Only store if this response is from a more recent fetch than what's already stored
-    if (
-      sequenceNumber !== undefined &&
-      sequenceNumber <= this.storedFetchSequenceNumber
-    ) {
+    if (sequenceNumber <= this.storedFetchSequenceNumber) {
       this.debug(
         `[Experiment] Ignoring stale fetch response (sequence ${sequenceNumber} <= ${this.storedFetchSequenceNumber})`,
       );
@@ -725,9 +722,7 @@ export class ExperimentClient implements Client {
     await this.variants.store();
 
     // Update the stored sequence number after successfully storing
-    if (sequenceNumber !== undefined) {
-      this.storedFetchSequenceNumber = sequenceNumber;
-    }
+    this.storedFetchSequenceNumber = sequenceNumber;
 
     this.debug('[Experiment] Stored variants: ', variants);
   }
