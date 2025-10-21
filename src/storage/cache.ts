@@ -3,8 +3,6 @@ import { EvaluationFlag } from '@amplitude/experiment-core';
 import { Storage } from '../types/storage';
 import { Variant } from '../types/variant';
 
-import { LocalStorage } from './local-storage';
-
 export const getVariantStorage = (
   deploymentKey: string,
   instanceName: string,
@@ -22,7 +20,7 @@ export const getVariantStorage = (
 export const getFlagStorage = (
   deploymentKey: string,
   instanceName: string,
-  storage: Storage = new LocalStorage(),
+  storage: Storage,
 ): LoadStoreCache<EvaluationFlag> => {
   const truncatedDeployment = deploymentKey.substring(deploymentKey.length - 6);
   const namespace = `amp-exp-${instanceName}-${truncatedDeployment}-flags`;
