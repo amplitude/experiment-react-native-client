@@ -8,6 +8,7 @@ import { ConnectorExposureTrackingProvider } from '../src/integration/connector'
 import { FetchOptions } from '../src/types/client';
 import { ExposureTrackingProvider } from '../src/types/exposure';
 import { Source } from '../src/types/source';
+import { Storage } from '../src/types/storage';
 import { HttpClient, SimpleResponse } from '../src/types/transport';
 import { ExperimentUser, ExperimentUserProvider } from '../src/types/user';
 import { Variant, Variants } from '../src/types/variant';
@@ -1009,6 +1010,66 @@ describe('start', () => {
     variant2 = client.variant('sdk-ci-test-local-2');
     expect(variant.key).toEqual('on');
     expect(variant2.key).toEqual('on');
+  });
+
+  test('start with custom storage', async () => {
+    // Create a custom storage object
+    const storageObject = {};
+    const storage = {
+      get: async (key: string) => storageObject[key],
+      put: async (key: string, value: string) => {
+        storageObject[key] = value;
+      },
+      delete: async (key: string) => {
+        delete storageObject[key];
+      },
+    } as Storage;
+
+    // Create a client with the custom storage object
+    const client = new ExperimentClient(API_KEY, { storage });
+    await client.start({ device_id: 'test_device' });
+
+    // Check that the flags are stored in the storage object
+    const storageKey = `amp-exp-$default_instance-${API_KEY.substring(
+      API_KEY.length - 6,
+    )}`;
+    expect(
+      JSON.parse(storageObject[storageKey + '-flags'])[serverKey],
+    ).toMatchObject({
+      key: serverKey,
+    });
+    // Check that the variant is stored in the storage object
+    expect(JSON.parse(storageObject[storageKey])[serverKey]).toMatchObject({
+      key: 'on',
+      value: 'on',
+    });
+  });
+});
+
+test('fetch with custom storage', async () => {
+  // Create a custom storage object
+  const storageObject = {};
+  const storage = {
+    get: async (key: string) => storageObject[key],
+    put: async (key: string, value: string) => {
+      storageObject[key] = value;
+    },
+    delete: async (key: string) => {
+      delete storageObject[key];
+    },
+  } as Storage;
+
+  // Create a client with the custom storage object
+  const client = new ExperimentClient(API_KEY, { storage });
+  await client.fetch(testUser);
+
+  // Check that the variant is stored in the storage object
+  const storageKey = `amp-exp-$default_instance-${API_KEY.substring(
+    API_KEY.length - 6,
+  )}`;
+  expect(JSON.parse(storageObject[storageKey])[serverKey]).toMatchObject({
+    key: 'on',
+    value: 'on',
   });
 });
 

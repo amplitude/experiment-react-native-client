@@ -3,7 +3,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Storage } from '../types/storage';
 
 export class LocalStorage implements Storage {
-  async get(key: string): Promise<string> {
+  async get(key: string): Promise<string | null> {
     return await AsyncStorage.getItem(key);
   }
 
