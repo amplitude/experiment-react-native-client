@@ -7,3 +7,4 @@ export { Source } from './types/source';
 export * from './types/user';
 export * from './types/variant';
 export * from './types/exposure';
+export * from './types/storage';
