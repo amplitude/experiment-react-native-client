@@ -401,7 +401,7 @@ export class ExperimentClient implements Client {
    * Set to track assignment event or not for fetching variants.
    * @param doTrack
    */
-  public async setTrackAssignmentEvent(doTrack: boolean): Promise<void> {
+  public async setTracksAssignment(doTrack: boolean): Promise<void> {
     this.fetchVariantsOptions.put({
       ...this.fetchVariantsOptions.get(),
       trackingOption: doTrack ? 'track' : 'no-track',
