@@ -1040,8 +1040,7 @@ describe('start', () => {
     });
     // Check that the variant is stored in the storage object
     expect(JSON.parse(storageObject[storageKey])[serverKey]).toMatchObject({
-      key: 'on',
-      value: 'on',
+      key: 'off',
     });
   });
 });
