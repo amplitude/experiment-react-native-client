@@ -70,7 +70,7 @@ test('ExperimentClient.fetch, success', async () => {
   const client = new ExperimentClient(API_KEY, {});
   await client.fetch(testUser);
   const variant = client.variant(serverKey);
-  expect(variant).toEqual(serverVariant);
+  expect(variant).toMatchObject(serverVariant);
 });
 
 /**
@@ -101,7 +101,7 @@ test('ExperimentClient.fetch, with retries, retry success', async () => {
   expect(variant).toEqual(fallbackVariant);
   await delay(2000);
   variant = client.variant(serverKey);
-  expect(variant).toEqual(serverVariant);
+  expect(variant).toMatchObject(serverVariant);
 });
 
 /**
@@ -166,7 +166,7 @@ test('ExperimentClient.variant, initial variants fallback before fetch, no fallb
   expect(variant).toEqual(initialVariant);
 
   variant = client.variant(serverKey);
-  expect(variant).toEqual(serverVariant);
+  expect(variant).toMatchObject(serverVariant);
 });
 
 /**
@@ -220,7 +220,7 @@ test('ExperimentClient.fetch, with user provider, success', async () => {
   );
   await client.fetch();
   const variant = client.variant('sdk-ci-test');
-  expect(variant).toEqual({ key: 'on', value: 'on', payload: 'payload' });
+  expect(variant).toMatchObject({ key: 'on', value: 'on', payload: 'payload' });
 });
 
 /**
@@ -233,7 +233,7 @@ test('ExperimentClient.fetch, with config user provider, success', async () => {
   });
   await client.fetch();
   const variant = client.variant('sdk-ci-test');
-  expect(variant).toEqual({ key: 'on', value: 'on', payload: 'payload' });
+  expect(variant).toMatchObject({ key: 'on', value: 'on', payload: 'payload' });
 });
 
 /**
@@ -266,11 +266,13 @@ test('ExperimentClient.variant, with exposure tracking provider, track called on
   for (let i = 0; i < 10; i++) {
     client.variant(serverKey);
   }
+  const variant = client.variant(serverKey);
 
   expect(trackSpy).toBeCalledTimes(1);
   expect(trackSpy).toHaveBeenCalledWith({
     flag_key: serverKey,
     variant: serverVariant.value,
+    metadata: variant.metadata,
   });
   expect(logEventSpy).toBeCalledTimes(1);
   expect(logEventSpy).toHaveBeenCalledWith({
@@ -278,6 +280,7 @@ test('ExperimentClient.variant, with exposure tracking provider, track called on
     eventProperties: {
       flag_key: serverKey,
       variant: serverVariant.value,
+      metadata: variant.metadata,
     },
   });
 });
@@ -293,13 +296,14 @@ test('ExperimentClient.variant, with analytics provider, exposure tracked, unset
     exposureTrackingProvider: exposureTrackingProvider,
   });
   await client.fetch(testUser);
-  client.variant(serverKey);
+  const variant = client.variant(serverKey);
 
   expect(spyTrack).toBeCalledTimes(1);
 
   const expectedEvent = {
     flag_key: serverKey,
     variant: serverVariant.value,
+    metadata: variant.metadata,
   };
   expect(spyTrack).lastCalledWith(expectedEvent);
 });
@@ -320,7 +324,7 @@ test('ExperimentClient.clear, clear all variants in the cache and storage', asyn
   const client = new ExperimentClient(API_KEY, {});
   await client.fetch(testUser);
   const variant = client.variant(serverKey);
-  expect(variant).toEqual(serverVariant);
+  expect(variant).toMatchObject(serverVariant);
 
   client.clear();
   const clearedVariants = client.all();
@@ -352,7 +356,7 @@ test('ExperimentClient.fetch with partial flag keys in fetch options, should ret
   const option: FetchOptions = { flagKeys: ['sdk-ci-test'] };
   await client.fetch(testUser, option);
   const variants = client.all();
-  expect(variants).toEqual(flagKeysTestVariantPartial);
+  expect(variants).toMatchObject(flagKeysTestVariantPartial);
 });
 
 test('ExperimentClient.fetch with partial flag keys in fetch options, should return the fetched variant', async () => {
@@ -360,7 +364,7 @@ test('ExperimentClient.fetch with partial flag keys in fetch options, should ret
   const option: FetchOptions = { flagKeys: ['sdk-ci-test'] };
   await client.fetch(testUser, option);
   const variant = client.all();
-  expect(variant).toEqual(flagKeysTestVariantPartial);
+  expect(variant).toMatchObject(flagKeysTestVariantPartial);
 });
 
 test('ExperimentClient.fetch without fetch options, should return all variants', async () => {
@@ -434,7 +438,7 @@ describe('local evaluation', () => {
     expect(variant.value).toBeUndefined();
     await client.fetch(user);
     variant = client.variant('sdk-ci-test');
-    expect(variant).toEqual({
+    expect(variant).toMatchObject({
       key: 'on',
       value: 'on',
       payload: 'payload',
@@ -662,7 +666,7 @@ describe('variant fallbacks', () => {
       await client.start(user);
       // Variant is result of inline fallback string
       const variantString = client.variant('sdk-ci-test', 'inline');
-      expect(variantString).toEqual({
+      expect(variantString).toMatchObject({
         key: 'on',
         value: 'on',
         payload: 'payload',
@@ -692,7 +696,7 @@ describe('variant fallbacks', () => {
       expect(variantString).toEqual({ key: 'inline', value: 'inline' });
       // Variant is result of inline fallback object
       const variantObject = client.variant('sdk-ci-test', { value: 'inline' });
-      expect(variantObject).toEqual({ value: 'inline' });
+      expect(variantObject).toMatchObject({ value: 'inline' });
       expect(spy).toHaveBeenCalledTimes(1);
       expect((spy.mock.calls[0] as any[])[0].flag_key).toEqual('sdk-ci-test');
       expect((spy.mock.calls[0] as any[])[0].variant).toBeUndefined();
@@ -715,7 +719,7 @@ describe('variant fallbacks', () => {
       await client.start(user);
       const variant = client.variant('sdk-ci-test');
       // Variant is result of fallbackVariant
-      expect(variant).toEqual({ key: 'fallback', value: 'fallback' });
+      expect(variant).toMatchObject({ key: 'fallback', value: 'fallback' });
       expect(spy).toHaveBeenCalledTimes(1);
       expect((spy.mock.calls[0] as any[])[0].flag_key).toEqual('sdk-ci-test');
       expect((spy.mock.calls[0] as any[])[0].variant).toBeUndefined();
@@ -736,7 +740,7 @@ describe('variant fallbacks', () => {
       // Start and fetch
       await client.start(user);
       const variant = client.variant('sdk-ci-test');
-      expect(variant).toEqual({
+      expect(variant).toMatchObject({
         key: 'off',
         metadata: { default: true },
       });
