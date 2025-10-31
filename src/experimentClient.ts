@@ -27,7 +27,7 @@ import { LocalStorage } from './storage/local-storage';
 import { FetchHttpClient, WrapperClient } from './transport/http';
 import { Client, FetchOptions } from './types/client';
 import { ExperimentConfig, Defaults } from './types/config';
-import { Exposure, ExposureTrackingProvider } from './types/exposure';
+import { Exposure } from './types/exposure';
 import { isFallback, Source, VariantSource } from './types/source';
 import { ExperimentUser, ExperimentUserProvider } from './types/user';
 import { Variant, Variants } from './types/variant';
@@ -42,7 +42,7 @@ import {
   convertUserToContext,
   convertVariant,
 } from './util/convert';
-import { SessionExposureTrackingProvider } from './util/sessionExposureTrackingProvider';
+import { UserSessionExposureTracker } from './util/userSessionExposureTracker';
 
 // Configs which have been removed from the public API.
 // May be added back in the future.
@@ -72,7 +72,7 @@ export class ExperimentClient implements Client {
   private readonly engine: EvaluationEngine = new EvaluationEngine();
   private user: ExperimentUser | undefined;
   private readonly defaultUserProvider: DefaultUserProvider;
-  private exposureTrackingProvider: ExposureTrackingProvider | undefined;
+  private userSessionExposureTracker: UserSessionExposureTracker | undefined;
   private retriesBackoff: Backoff | undefined;
   private poller: Poller = new Poller(
     () => this.doFlags(),
@@ -113,7 +113,7 @@ export class ExperimentClient implements Client {
       this.config.userProvider,
     );
     if (this.config.exposureTrackingProvider) {
-      this.exposureTrackingProvider = new SessionExposureTrackingProvider(
+      this.userSessionExposureTracker = new UserSessionExposureTracker(
         this.config.exposureTrackingProvider,
       );
     }
@@ -806,7 +806,8 @@ export class ExperimentClient implements Client {
       }
     }
     if (metadata) exposure.metadata = metadata;
-    this.exposureTrackingProvider?.track(exposure);
+    const user = this.addContextSync(this.getUser());
+    this.userSessionExposureTracker?.track(exposure, user);
   }
 
   private debug(message?: any, ...optionalParams: any[]): void {
