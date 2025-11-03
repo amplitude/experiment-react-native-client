@@ -63,7 +63,7 @@ export interface ExperimentConfig {
    * automatically sets the {@link serverUrl} and {@link flagsServerUrl}
    * configurations.
    */
-  serverZone?: string;
+  serverZone?: 'US' | 'EU';
 
   /**
    * The request timeout, in milliseconds, when fetching variants.
