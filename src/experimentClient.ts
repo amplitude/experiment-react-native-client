@@ -132,7 +132,7 @@ export class ExperimentClient implements Client {
       httpClient,
     );
     // Storage & Caching
-    const storage = new LocalStorage();
+    const storage = this.config.storage || new LocalStorage();
     this.variants = getVariantStorage(
       this.apiKey,
       this.config.instanceName,

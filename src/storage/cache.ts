@@ -3,8 +3,6 @@ import { EvaluationFlag } from '@amplitude/experiment-core';
 import { Storage } from '../types/storage';
 import { Variant } from '../types/variant';
 
-import { LocalStorage } from './local-storage';
-
 export const getVariantStorage = (
   deploymentKey: string,
   instanceName: string,
@@ -22,7 +20,7 @@ export const getVariantStorage = (
 export const getFlagStorage = (
   deploymentKey: string,
   instanceName: string,
-  storage: Storage = new LocalStorage(),
+  storage: Storage,
 ): LoadStoreCache<EvaluationFlag> => {
   const truncatedDeployment = deploymentKey.substring(deploymentKey.length - 6);
   const namespace = `amp-exp-${instanceName}-${truncatedDeployment}-flags`;
@@ -75,7 +73,7 @@ export class LoadStoreCache<V> {
     const rawValues = await this.storage.get(this.namespace);
     let jsonValues: Record<string, unknown>;
     try {
-      jsonValues = JSON.parse(rawValues) || {};
+      jsonValues = rawValues ? JSON.parse(rawValues) : {};
     } catch {
       // Do nothing
       return;
@@ -104,7 +102,7 @@ export class LoadStoreCache<V> {
   }
 
   public async store(values: Record<string, V> = this.cache): Promise<void> {
-    await this.storage.put(this.namespace, JSON.stringify(values));
+    await this.storage.set(this.namespace, JSON.stringify(values));
   }
 }
 
