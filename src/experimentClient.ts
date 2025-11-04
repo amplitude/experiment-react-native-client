@@ -100,12 +100,10 @@ export class ExperimentClient implements Client {
       // Set server URLs separately
       serverUrl:
         config?.serverUrl ||
-        (config?.serverZone?.toLowerCase() === 'eu'
-          ? euServerUrl
-          : Defaults.serverUrl),
+        (config?.serverZone === 'EU' ? euServerUrl : Defaults.serverUrl),
       flagsServerUrl:
         config?.flagsServerUrl ||
-        (config?.serverZone?.toLowerCase() === 'eu'
+        (config?.serverZone === 'EU'
           ? euFlagsServerUrl
           : Defaults.flagsServerUrl),
     };
