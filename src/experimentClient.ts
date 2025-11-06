@@ -115,7 +115,7 @@ export class ExperimentClient implements Client {
     };
     this.logger = new AmpLogger(
       this.config.loggerProvider || new ConsoleLogger(),
-      this.getLogLevel(this.config),
+      ExperimentClient.getLogLevel(this.config),
     );
     this.defaultUserProvider = new DefaultUserProvider(
       this.config.userProvider,
@@ -818,7 +818,7 @@ export class ExperimentClient implements Client {
     this.userSessionExposureTracker?.track(exposure, user);
   }
 
-  private getLogLevel(config: ExperimentConfig): LogLevel {
+  private static getLogLevel(config: ExperimentConfig): LogLevel {
     // Backwards compatibility: if debug flag is set to true, use Debug level
     if (config.debug === true) {
       return LogLevel.Debug;
