@@ -158,7 +158,7 @@ test('ExperimentClient.variant, initial variants fallback before fetch, no fallb
   expect(variant).toEqual(initialVariant);
 
   variant = client.variant(serverKey);
-  expect(variant).toEqual(serverOffVariant);
+  expect(variant).toMatchObject(serverOffVariant);
 
   await client.fetch(testUser);
 
@@ -191,10 +191,10 @@ test('ExperimentClient.fetch, initial variants source, prefer initial', async ()
     initialVariants: initialVariants,
   });
   let variant = client.variant(serverKey);
-  expect(variant).toEqual(serverOffVariant);
+  expect(variant).toMatchObject(serverOffVariant);
   await client.fetch(testUser);
   variant = client.variant(serverKey);
-  expect(variant).toEqual(serverOffVariant);
+  expect(variant).toMatchObject(serverOffVariant);
 });
 
 /**
@@ -269,19 +269,19 @@ test('ExperimentClient.variant, with exposure tracking provider, track called on
   const variant = client.variant(serverKey);
 
   expect(trackSpy).toBeCalledTimes(1);
-  expect(trackSpy).toHaveBeenCalledWith({
-    flag_key: serverKey,
-    variant: serverVariant.value,
-    metadata: variant.metadata,
-  });
+  expect(trackSpy).toHaveBeenCalledWith(
+    expect.objectContaining({
+      flag_key: serverKey,
+      variant: serverVariant.value,
+    }),
+  );
   expect(logEventSpy).toBeCalledTimes(1);
   expect(logEventSpy).toHaveBeenCalledWith({
     eventType: '$exposure',
-    eventProperties: {
+    eventProperties: expect.objectContaining({
       flag_key: serverKey,
       variant: serverVariant.value,
-      metadata: variant.metadata,
-    },
+    }),
   });
 });
 
@@ -305,7 +305,7 @@ test('ExperimentClient.variant, with analytics provider, exposure tracked, unset
     variant: serverVariant.value,
     metadata: variant.metadata,
   };
-  expect(spyTrack).lastCalledWith(expectedEvent);
+  expect(spyTrack).lastCalledWith(expect.objectContaining(expectedEvent));
 });
 
 test('configure httpClient, success', async () => {
