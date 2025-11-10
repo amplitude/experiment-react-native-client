@@ -13,6 +13,7 @@ import {
   Poller,
   SdkFlagApi,
   SdkEvaluationApi,
+  GetVariantsOptions,
 } from '@amplitude/experiment-core';
 
 import { version as PACKAGE_VERSION } from './gen/version';
@@ -20,8 +21,10 @@ import { ConnectorUserProvider } from './integration/connector';
 import { DefaultUserProvider } from './integration/default';
 import {
   getFlagStorage,
+  getVariantsOptionsStorage,
   getVariantStorage,
   LoadStoreCache,
+  SingleValueStoreCache,
 } from './storage/cache';
 import { LocalStorage } from './storage/local-storage';
 import { FetchHttpClient, WrapperClient } from './transport/http';
@@ -81,6 +84,7 @@ export class ExperimentClient implements Client {
   private isRunning = false;
   private readonly flagsAndVariantsLoadedPromise: Promise<void>[] | undefined;
   private readonly initialFlags: EvaluationFlag[] | undefined;
+  private readonly fetchVariantsOptions: SingleValueStoreCache<GetVariantsOptions>;
 
   /**
    * Creates a new ExperimentClient instance.
@@ -140,9 +144,15 @@ export class ExperimentClient implements Client {
     if (this.config.initialFlags) {
       this.initialFlags = JSON.parse(this.config.initialFlags);
     }
+    this.fetchVariantsOptions = getVariantsOptionsStorage(
+      this.apiKey,
+      this.config.instanceName,
+      storage,
+    );
     this.flagsAndVariantsLoadedPromise = [
       this.flags.load(this.convertInitialFlagsForStorage()),
       this.variants.load(),
+      this.fetchVariantsOptions.load(),
     ];
   }
 
@@ -383,6 +393,19 @@ export class ExperimentClient implements Client {
   public setUserProvider(userProvider: ExperimentUserProvider): Client {
     this.defaultUserProvider.baseProvider = userProvider;
     return this;
+  }
+
+  /**
+   * Enables or disables tracking of assignment events when fetching variants.
+   * @param doTrack Whether to track assignment events.
+   */
+  public async setTracksAssignment(doTrack: boolean): Promise<void> {
+    this.fetchVariantsOptions.put({
+      ...this.fetchVariantsOptions.get(),
+      trackingOption: doTrack ? 'track' : 'no-track',
+    });
+    // No need to wait for persistence to complete.
+    this.fetchVariantsOptions.store();
   }
 
   private convertInitialFlagsForStorage(): Record<string, EvaluationFlag> {
@@ -664,6 +687,7 @@ export class ExperimentClient implements Client {
     user = await this.addContextOrWait(user, 10000);
     this.debug('[Experiment] Fetch variants for user: ', user);
     const results = await this.evaluationApi.getVariants(user, {
+      ...this.fetchVariantsOptions.get(),
       timeoutMillis: timeoutMillis,
       flagKeys: options?.flagKeys,
     });
