@@ -12,6 +12,9 @@ jobs:
   release:
     name: Release
     runs-on: ubuntu-latest
+    permissions:
+      id-token: write
+      contents: read
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -29,7 +32,11 @@ jobs:
       - name: Setup Node
         uses: actions/setup-node@v4
         with:
-          node-version: '16'
+          node-version: '20'
+          registry-url: 'https://registry.npmjs.org'
+
+      - name: Update npm for trusted publishing
+        run: npm install -g npm@latest
 
       - name: Install
         run: yarn install --frozen-lockfile
@@ -44,12 +51,6 @@ jobs:
         run: |
           git config --global user.name amplitude-sdk-bot
           git config --global user.email amplitude-sdk-bot@users.noreply.github.com
-
-      - name: Setup NPM Token
-        if: ${{ github.event.inputs.dryRun == 'false'}}
-        env:
-          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
-        run: echo //registry.npmjs.org/:_authToken=${NPM_TOKEN} > .npmrc
 
       - name: Release (Dry Run)
         if: ${{ github.event.inputs.dryRun == 'true'}}
