@@ -19,6 +19,8 @@ import {
 import { version as PACKAGE_VERSION } from './gen/version';
 import { ConnectorUserProvider } from './integration/connector';
 import { DefaultUserProvider } from './integration/default';
+import { AmpLogger } from './logger/ampLogger';
+import { ConsoleLogger } from './logger/consoleLogger';
 import {
   getFlagStorage,
   getVariantsOptionsStorage,
@@ -31,6 +33,7 @@ import { FetchHttpClient, WrapperClient } from './transport/http';
 import { Client, FetchOptions } from './types/client';
 import { ExperimentConfig, Defaults } from './types/config';
 import { Exposure } from './types/exposure';
+import { LogLevel } from './types/logger';
 import { isFallback, Source, VariantSource } from './types/source';
 import { ExperimentUser, ExperimentUserProvider } from './types/user';
 import { Variant, Variants } from './types/variant';
@@ -68,6 +71,7 @@ const euFlagsServerUrl = 'https://flag.lab.eu.amplitude.com';
 export class ExperimentClient implements Client {
   private readonly apiKey: string;
   private readonly config: ExperimentConfig;
+  private readonly logger: AmpLogger;
   private readonly variants: LoadStoreCache<Variant>;
   private readonly flags: LoadStoreCache<EvaluationFlag>;
   private readonly flagApi: FlagApi;
@@ -111,6 +115,10 @@ export class ExperimentClient implements Client {
           ? euFlagsServerUrl
           : Defaults.flagsServerUrl),
     };
+    this.logger = new AmpLogger(
+      this.config.loggerProvider || new ConsoleLogger(),
+      ExperimentClient.getLogLevel(this.config),
+    );
     this.defaultUserProvider = new DefaultUserProvider(
       this.config.userProvider,
     );
@@ -249,7 +257,7 @@ export class ExperimentClient implements Client {
         options,
       );
     } catch (e) {
-      console.warn(e);
+      this.logger.warn(e);
     }
     return this;
   }
@@ -277,7 +285,7 @@ export class ExperimentClient implements Client {
     if (this.config.automaticExposureTracking) {
       this.exposureInternal(key, sourceVariant);
     }
-    this.debug(
+    this.logger.debug(
       `[Experiment] variant for ${key} is ${sourceVariant.variant?.value}`,
     );
     return sourceVariant.variant || {};
@@ -659,7 +667,7 @@ export class ExperimentClient implements Client {
       throw Error('Experiment API key is empty');
     }
 
-    this.debug(`[Experiment] Fetch all: retry=${retry}`);
+    this.logger.debug(`[Experiment] Fetch all: retry=${retry}`);
 
     // Proactively cancel retries if active in order to avoid unnecessary API
     // requests. A new failure will restart the retries.
@@ -685,7 +693,7 @@ export class ExperimentClient implements Client {
     options?: FetchOptions,
   ): Promise<Variants> {
     user = await this.addContextOrWait(user, 10000);
-    this.debug('[Experiment] Fetch variants for user: ', user);
+    this.logger.debug('[Experiment] Fetch variants for user: ', user);
     const results = await this.evaluationApi.getVariants(user, {
       ...this.fetchVariantsOptions.get(),
       timeoutMillis: timeoutMillis,
@@ -695,7 +703,7 @@ export class ExperimentClient implements Client {
     for (const key of Object.keys(results)) {
       variants[key] = convertEvaluationVariantToVariant(results[key]);
     }
-    this.debug('[Experiment] Received variants: ', variants);
+    this.logger.debug('[Experiment] Received variants: ', variants);
     return variants;
   }
 
@@ -728,14 +736,14 @@ export class ExperimentClient implements Client {
       this.variants.remove(key);
     }
     await this.variants.store();
-    this.debug('[Experiment] Stored variants: ', variants);
+    this.logger.debug('[Experiment] Stored variants: ', variants);
   }
 
   private async startRetries(
     user: ExperimentUser,
     options?: FetchOptions,
   ): Promise<void> {
-    this.debug('[Experiment] Retry fetch');
+    this.logger.debug('[Experiment] Retry fetch');
     this.retriesBackoff = new Backoff(
       fetchBackoffAttempts,
       fetchBackoffMinMillis,
@@ -832,10 +840,13 @@ export class ExperimentClient implements Client {
     this.userSessionExposureTracker?.track(exposure, user);
   }
 
-  private debug(message?: any, ...optionalParams: any[]): void {
-    if (this.config.debug) {
-      console.debug(message, ...optionalParams);
+  private static getLogLevel(config: ExperimentConfig): LogLevel {
+    // Backwards compatibility: if debug flag is set to true, use Debug level
+    if (config.debug === true) {
+      return LogLevel.Debug;
     }
+    // Otherwise use the configured logLevel or default to Warn
+    return config.logLevel ?? LogLevel.Warn;
   }
 
   private shouldRetryFetch(e: Error): boolean {
