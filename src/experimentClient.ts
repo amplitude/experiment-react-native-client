@@ -731,7 +731,7 @@ export class ExperimentClient implements Client {
   ): Promise<void> {
     // Only store if this response is from a more recent fetch than what's already stored
     if (sequenceNumber <= this.storedFetchSequenceNumber) {
-      this.debug(
+      this.logger.debug(
         `[Experiment] Ignoring stale fetch response (sequence ${sequenceNumber} <= ${this.storedFetchSequenceNumber})`,
       );
       return;

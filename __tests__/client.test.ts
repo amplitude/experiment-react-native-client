@@ -2,11 +2,10 @@ import { AnalyticsConnector } from '@amplitude/analytics-connector';
 import { FetchError } from '@amplitude/experiment-core';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
-import { Exposure } from '../lib/typescript';
 import { ExperimentClient } from '../src/experimentClient';
 import { ConnectorExposureTrackingProvider } from '../src/integration/connector';
 import { FetchOptions } from '../src/types/client';
-import { ExposureTrackingProvider } from '../src/types/exposure';
+import { Exposure, ExposureTrackingProvider } from '../src/types/exposure';
 import { Source } from '../src/types/source';
 import { HttpClient, SimpleResponse } from '../src/types/transport';
 import { ExperimentUser, ExperimentUserProvider } from '../src/types/user';
@@ -266,7 +265,7 @@ test('ExperimentClient.variant, with exposure tracking provider, track called on
   for (let i = 0; i < 10; i++) {
     client.variant(serverKey);
   }
-  const variant = client.variant(serverKey);
+  client.variant(serverKey);
 
   expect(trackSpy).toBeCalledTimes(1);
   expect(trackSpy).toHaveBeenCalledWith(
