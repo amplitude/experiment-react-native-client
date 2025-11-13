@@ -1,6 +1,7 @@
 import { FetchHttpClient } from '../transport/http';
 
 import { ExposureTrackingProvider } from './exposure';
+import { Logger, LogLevel } from './logger';
 import { Source } from './source';
 import { Storage } from './storage';
 import { HttpClient } from './transport';
@@ -14,8 +15,22 @@ export interface ExperimentConfig {
   /**
    * Debug all assignment requests in the UI Debugger and log additional
    * information to the console. This should be false for production builds.
+   * @deprecated Use logLevel instead. When debug is true, it sets logLevel to Debug.
    */
   debug?: boolean;
+
+  /**
+   * The minimum log level to output. Messages below this level will be ignored.
+   * Supported levels: Disable, Error, Warn, Info, Debug, Verbose.
+   * If the deprecated debug flag is set to true, this will be set to Debug.
+   */
+  logLevel?: LogLevel;
+
+  /**
+   * Custom logger implementation. If not provided, a default ConsoleLogger will be used.
+   * The logger must implement the Logger interface with methods for error, warn, info, debug, and verbose.
+   */
+  loggerProvider?: Logger;
 
   /**
    * The name of the instance being initialized. Used for initializing separate
@@ -64,7 +79,7 @@ export interface ExperimentConfig {
    * automatically sets the {@link serverUrl} and {@link flagsServerUrl}
    * configurations.
    */
-  serverZone?: string;
+  serverZone?: 'US' | 'EU';
 
   /**
    * The request timeout, in milliseconds, when fetching variants.
@@ -146,6 +161,8 @@ export interface ExperimentConfig {
  | **Option**       | **Default**                       |
  |------------------|-----------------------------------|
  | **debug**        | `false`                           |
+ | **logLevel**     | `LogLevel.Error`                  |
+ | **logger**       | `null` (ConsoleLogger will be used) |
  | **instanceName** | `$default_instance` |
  | **fallbackVariant**         | `null`                 |
  | **initialVariants**         | `null`                 |
@@ -169,6 +186,8 @@ export interface ExperimentConfig {
  */
 export const Defaults: ExperimentConfig = {
   debug: false,
+  logLevel: LogLevel.Error,
+  loggerProvider: null,
   instanceName: '$default_instance',
   fallbackVariant: {},
   initialVariants: {},
