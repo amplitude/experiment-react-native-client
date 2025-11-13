@@ -30,7 +30,7 @@ export const getFlagStorage = (
 export const getVariantsOptionsStorage = (
   deploymentKey: string,
   instanceName: string,
-  storage: Storage = new LocalStorage(),
+  storage: Storage,
 ): SingleValueStoreCache<GetVariantsOptions> => {
   const truncatedDeployment = deploymentKey.substring(deploymentKey.length - 6);
   const namespace = `amp-exp-${instanceName}-${truncatedDeployment}-variants-options`;
