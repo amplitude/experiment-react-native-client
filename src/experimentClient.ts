@@ -88,6 +88,8 @@ export class ExperimentClient implements Client {
   private isRunning = false;
   private readonly flagsAndVariantsLoadedPromise: Promise<void>[] | undefined;
   private readonly initialFlags: EvaluationFlag[] | undefined;
+  private fetchSequenceNumber = 0;
+  private storedFetchSequenceNumber = 0;
   private readonly fetchVariantsOptions: SingleValueStoreCache<GetVariantsOptions>;
 
   /**
@@ -675,9 +677,12 @@ export class ExperimentClient implements Client {
       this.stopRetries();
     }
 
+    // Assign a sequence number to this fetch to handle race conditions
+    const sequenceNumber = ++this.fetchSequenceNumber;
+
     try {
       const variants = await this.doFetch(user, timeoutMillis, options);
-      await this.storeVariants(variants, options);
+      await this.storeVariants(variants, sequenceNumber, options);
       return variants;
     } catch (e) {
       if (retry && this.shouldRetryFetch(e)) {
@@ -721,8 +726,17 @@ export class ExperimentClient implements Client {
 
   private async storeVariants(
     variants: Variants,
+    sequenceNumber: number,
     options?: FetchOptions,
   ): Promise<void> {
+    // Only store if this response is from a more recent fetch than what's already stored
+    if (sequenceNumber <= this.storedFetchSequenceNumber) {
+      this.logger.debug(
+        `[Experiment] Ignoring stale fetch response (sequence ${sequenceNumber} <= ${this.storedFetchSequenceNumber})`,
+      );
+      return;
+    }
+
     let failedFlagKeys = options && options.flagKeys ? options.flagKeys : [];
     if (failedFlagKeys.length === 0) {
       this.variants.clear();
@@ -736,6 +750,8 @@ export class ExperimentClient implements Client {
       this.variants.remove(key);
     }
     await this.variants.store();
+    // Update the stored sequence number after successfully storing
+    this.storedFetchSequenceNumber = sequenceNumber;
     this.logger.debug('[Experiment] Stored variants: ', variants);
   }
 
