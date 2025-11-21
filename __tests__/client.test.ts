@@ -8,6 +8,7 @@ import { ConnectorExposureTrackingProvider } from '../src/integration/connector'
 import { FetchOptions } from '../src/types/client';
 import { ExposureTrackingProvider } from '../src/types/exposure';
 import { Source } from '../src/types/source';
+import { Storage } from '../src/types/storage';
 import { HttpClient, SimpleResponse } from '../src/types/transport';
 import { ExperimentUser, ExperimentUserProvider } from '../src/types/user';
 import { Variant, Variants } from '../src/types/variant';
@@ -266,6 +267,7 @@ test('ExperimentClient.variant, with exposure tracking provider, track called on
   for (let i = 0; i < 10; i++) {
     client.variant(serverKey);
   }
+  const variant = client.variant(serverKey);
 
   expect(trackSpy).toBeCalledTimes(1);
   expect(trackSpy).toHaveBeenCalledWith(
@@ -295,13 +297,14 @@ test('ExperimentClient.variant, with analytics provider, exposure tracked, unset
     exposureTrackingProvider: exposureTrackingProvider,
   });
   await client.fetch(testUser);
-  client.variant(serverKey);
+  const variant = client.variant(serverKey);
 
   expect(spyTrack).toBeCalledTimes(1);
 
   const expectedEvent = {
     flag_key: serverKey,
     variant: serverVariant.value,
+    metadata: variant.metadata,
   };
   expect(spyTrack).lastCalledWith(expect.objectContaining(expectedEvent));
 });
@@ -694,7 +697,7 @@ describe('variant fallbacks', () => {
       expect(variantString).toEqual({ key: 'inline', value: 'inline' });
       // Variant is result of inline fallback object
       const variantObject = client.variant('sdk-ci-test', { value: 'inline' });
-      expect(variantObject).toEqual({ value: 'inline' });
+      expect(variantObject).toMatchObject({ value: 'inline' });
       expect(spy).toHaveBeenCalledTimes(1);
       expect((spy.mock.calls[0] as any[])[0].flag_key).toEqual('sdk-ci-test');
       expect((spy.mock.calls[0] as any[])[0].variant).toBeUndefined();
@@ -717,7 +720,7 @@ describe('variant fallbacks', () => {
       await client.start(user);
       const variant = client.variant('sdk-ci-test');
       // Variant is result of fallbackVariant
-      expect(variant).toEqual({ key: 'fallback', value: 'fallback' });
+      expect(variant).toMatchObject({ key: 'fallback', value: 'fallback' });
       expect(spy).toHaveBeenCalledTimes(1);
       expect((spy.mock.calls[0] as any[])[0].flag_key).toEqual('sdk-ci-test');
       expect((spy.mock.calls[0] as any[])[0].variant).toBeUndefined();
@@ -1010,6 +1013,65 @@ describe('start', () => {
     expect(variant.key).toEqual('on');
     expect(variant2.key).toEqual('on');
   });
+
+  test('start with custom storage', async () => {
+    // Create a custom storage object
+    const storageObject = {};
+    const storage = {
+      get: async (key: string) => storageObject[key],
+      put: async (key: string, value: string) => {
+        storageObject[key] = value;
+      },
+      delete: async (key: string) => {
+        delete storageObject[key];
+      },
+    } as Storage;
+
+    // Create a client with the custom storage object
+    const client = new ExperimentClient(API_KEY, { storage });
+    await client.start({ device_id: 'test_device' });
+
+    // Check that the flags are stored in the storage object
+    const storageKey = `amp-exp-$default_instance-${API_KEY.substring(
+      API_KEY.length - 6,
+    )}`;
+    expect(
+      JSON.parse(storageObject[storageKey + '-flags'])[serverKey],
+    ).toMatchObject({
+      key: serverKey,
+    });
+    // Check that the variant is stored in the storage object
+    expect(JSON.parse(storageObject[storageKey])[serverKey]).toMatchObject({
+      key: 'off',
+    });
+  });
+});
+
+test('fetch with custom storage', async () => {
+  // Create a custom storage object
+  const storageObject = {};
+  const storage = {
+    get: async (key: string) => storageObject[key],
+    put: async (key: string, value: string) => {
+      storageObject[key] = value;
+    },
+    delete: async (key: string) => {
+      delete storageObject[key];
+    },
+  } as Storage;
+
+  // Create a client with the custom storage object
+  const client = new ExperimentClient(API_KEY, { storage });
+  await client.fetch(testUser);
+
+  // Check that the variant is stored in the storage object
+  const storageKey = `amp-exp-$default_instance-${API_KEY.substring(
+    API_KEY.length - 6,
+  )}`;
+  expect(JSON.parse(storageObject[storageKey])[serverKey]).toMatchObject({
+    key: 'on',
+    value: 'on',
+  });
 });
 
 describe('fetch retry with different response codes', () => {
@@ -1052,4 +1114,164 @@ describe('fetch retry with different response codes', () => {
       expect(retryMock).toHaveBeenCalledTimes(retryCalled);
     },
   );
+});
+
+describe('setTracksAssignment', () => {
+  beforeEach(async () => {
+    await AsyncStorage.clear();
+    jest.restoreAllMocks();
+  });
+
+  afterEach(() => {
+    jest.restoreAllMocks();
+  });
+
+  test('setTracksAssignment(boolean) sets trackingOption to track and getVariants is called with correct options', async () => {
+    const client = new ExperimentClient(API_KEY, {});
+
+    // Mock the evaluationApi.getVariants method
+    const getVariantsSpy = jest.spyOn(
+      (client as any).evaluationApi,
+      'getVariants',
+    );
+    getVariantsSpy.mockResolvedValue({
+      'test-flag': { key: 'on', value: 'on' },
+    });
+
+    // Set track assignment event to true
+    await client.setTracksAssignment(true);
+
+    // Fetch variants to trigger the API call
+    await client.fetch(testUser);
+
+    // Verify getVariants was called with trackingOption: 'track'
+    expect(getVariantsSpy).toHaveBeenCalledWith(
+      expect.objectContaining({
+        user_id: testUser.user_id,
+        library: expect.stringContaining('experiment-react-native-client'),
+      }),
+      expect.objectContaining({
+        trackingOption: 'track',
+        timeoutMillis: expect.any(Number),
+      }),
+    );
+
+    // Set track assignment event to false
+    await client.setTracksAssignment(false);
+
+    // Fetch variants to trigger the API call
+    await client.fetch(testUser);
+
+    // Verify getVariants was called with trackingOption: 'no-track'
+    expect(getVariantsSpy).toHaveBeenCalledWith(
+      expect.objectContaining({
+        user_id: testUser.user_id,
+        library: expect.stringContaining('experiment-react-native-client'),
+      }),
+      expect.objectContaining({
+        trackingOption: 'no-track',
+        timeoutMillis: expect.any(Number),
+      }),
+    );
+  });
+
+  test('setTracksAssignment persists the setting to storage', async () => {
+    const client = new ExperimentClient(API_KEY, {});
+
+    // Set track assignment event to true
+    await client.setTracksAssignment(true);
+
+    // Create a new client instance to verify persistence
+    const client2 = new ExperimentClient(API_KEY, {});
+    await client2.cacheReady();
+
+    // Mock the evaluationApi.getVariants method for the second client
+    const getVariantsSpy = jest.spyOn(
+      (client2 as any).evaluationApi,
+      'getVariants',
+    );
+    getVariantsSpy.mockResolvedValue({
+      'test-flag': { key: 'on', value: 'on' },
+    });
+
+    // Fetch variants with the second client
+    await client2.fetch(testUser);
+
+    // Verify the setting was persisted and loaded by the second client
+    expect(getVariantsSpy).toHaveBeenCalledWith(
+      expect.objectContaining({
+        user_id: testUser.user_id,
+        library: expect.stringContaining('experiment-react-native-client'),
+      }),
+      expect.objectContaining({
+        trackingOption: 'track',
+        timeoutMillis: expect.any(Number),
+      }),
+    );
+  });
+
+  test('multiple calls to setTracksAssignment uses the latest setting', async () => {
+    const client = new ExperimentClient(API_KEY, {});
+
+    // Mock the evaluationApi.getVariants method
+    const getVariantsSpy = jest.spyOn(
+      (client as any).evaluationApi,
+      'getVariants',
+    );
+    getVariantsSpy.mockResolvedValue({
+      'test-flag': { key: 'off', value: 'off' },
+    });
+
+    // Set track assignment event to true, then false
+    await client.setTracksAssignment(true);
+    await client.setTracksAssignment(false);
+
+    // Fetch variants to trigger the API call
+    await client.fetch(testUser);
+
+    // Verify getVariants was called with the latest setting (no-track)
+    expect(getVariantsSpy).toHaveBeenCalledWith(
+      expect.objectContaining({
+        user_id: testUser.user_id,
+        library: expect.stringContaining('experiment-react-native-client'),
+      }),
+      expect.objectContaining({
+        trackingOption: 'no-track',
+        timeoutMillis: expect.any(Number),
+      }),
+    );
+  });
+
+  test('setTracksAssignment preserves other existing options while updating trackingOption', async () => {
+    const client = new ExperimentClient(API_KEY, {});
+
+    // Mock the evaluationApi.getVariants method
+    const getVariantsSpy = jest.spyOn(
+      (client as any).evaluationApi,
+      'getVariants',
+    );
+    getVariantsSpy.mockResolvedValue({
+      'test-flag': { key: 'on', value: 'on' },
+    });
+
+    // Set track assignment event to true
+    await client.setTracksAssignment(true);
+
+    // Fetch variants with specific flag keys to ensure other options are preserved
+    const fetchOptions = { flagKeys: ['test-flag'] };
+    await client.fetch(testUser, fetchOptions);
+
+    // Verify getVariants was called with both trackingOption and flagKeys
+    expect(getVariantsSpy).toHaveBeenCalledWith(
+      expect.objectContaining({
+        user_id: testUser.user_id,
+        library: expect.stringContaining('experiment-react-native-client'),
+      }),
+      expect.objectContaining({
+        trackingOption: 'track',
+        flagKeys: ['test-flag'],
+        timeoutMillis: expect.any(Number),
+      }),
+    );
+  });
 });

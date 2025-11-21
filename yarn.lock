@@ -7,10 +7,10 @@
   resolved "https://registry.yarnpkg.com/@amplitude/analytics-connector/-/analytics-connector-1.6.4.tgz#8a811ff5c8ee46bdfea0e8f61c7578769b5778ed"
   integrity sha512-SpIv0IQMNIq6SH3UqFGiaZyGSc7PBZwRdq7lvP0pBxW8i4Ny+8zwI0pV+VMfMHQwWY3wdIbWw5WQphNjpdq1/Q==
 
-"@amplitude/experiment-core@^0.7.2":
-  version "0.7.2"
-  resolved "https://registry.yarnpkg.com/@amplitude/experiment-core/-/experiment-core-0.7.2.tgz#f94219d68d86322e8d580c8fbe0672dcd29f86bb"
-  integrity sha512-Wc2NWvgQ+bLJLeF0A9wBSPIaw0XuqqgkPKsoNFQrmS7r5Djd56um75In05tqmVntPJZRvGKU46pAp8o5tdf4mA==
+"@amplitude/experiment-core@^0.11.0":
+  version "0.11.1"
+  resolved "https://registry.yarnpkg.com/@amplitude/experiment-core/-/experiment-core-0.11.1.tgz#31eb485dc40b65f4cc2f15adab9b62f0df622065"
+  integrity sha512-fHVJazCwwgjUcj49N+yFSLMSroyY0eHImrsmd1ipIjIT1Cez8mh+TvwJQ0LGSdyYvL2NAZM2J5vpXrR1nHgdzg==
   dependencies:
     js-base64 "^3.7.5"
 
