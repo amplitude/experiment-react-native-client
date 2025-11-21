@@ -267,7 +267,7 @@ test('ExperimentClient.variant, with exposure tracking provider, track called on
   for (let i = 0; i < 10; i++) {
     client.variant(serverKey);
   }
-  const variant = client.variant(serverKey);
+  client.variant(serverKey);
 
   expect(trackSpy).toBeCalledTimes(1);
   expect(trackSpy).toHaveBeenCalledWith(
