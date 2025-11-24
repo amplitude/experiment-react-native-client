@@ -6,27 +6,39 @@ buildscript {
     }
 
     dependencies {
-        classpath 'com.android.tools.build:gradle:7.2.2'
+        classpath 'com.android.tools.build:gradle:8.2.1'
         classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
     }
 }
 
 apply plugin: 'com.android.library'
 apply plugin: 'kotlin-android'
+apply plugin: 'com.facebook.react'
+
+react {
+    // Intentionally empty
+}
+
+def isNewArchitectureEnabled() {
+    return project.hasProperty("newArchEnabled") && project.newArchEnabled == "true"
+}
 
 def safeExtGet(prop, fallback) {
     rootProject.ext.has(prop) ? rootProject.ext.get(prop) : fallback
 }
 
 android {
-    compileSdkVersion safeExtGet('ExperimentReactNativeClient_compileSdkVersion', 31)
-    buildToolsVersion safeExtGet('ExperimentReactNativeClient_buildToolsVersion', '31.0.0')
+    namespace "com.amplitude.experiment.reactnative"
+    compileSdk safeExtGet('ExperimentReactNativeClient_compileSdkVersion', 34)
+    buildToolsVersion safeExtGet('ExperimentReactNativeClient_buildToolsVersion', '34.0.0')
+
     defaultConfig {
-        minSdkVersion safeExtGet('ExperimentReactNativeClient_minSdkVersion', 21)
-        targetSdkVersion safeExtGet('ExperimentReactNativeClient_targetSdkVersion', 31)
+        minSdkVersion safeExtGet('ExperimentReactNativeClient_minSdkVersion', 23)
+        targetSdkVersion safeExtGet('ExperimentReactNativeClient_targetSdkVersion', 34)
         versionCode 1
         versionName "1.0"
 
+        buildConfigField "boolean", "IS_NEW_ARCHITECTURE_ENABLED", isNewArchitectureEnabled().toString()
     }
 
     buildTypes {
@@ -34,12 +46,24 @@ android {
             minifyEnabled false
         }
     }
-    lintOptions {
+
+    lint {
         disable 'GradleCompatible'
     }
+
     compileOptions {
         sourceCompatibility JavaVersion.VERSION_1_8
         targetCompatibility JavaVersion.VERSION_1_8
+    }
+
+    sourceSets {
+        main {
+            if (isNewArchitectureEnabled()) {
+                java.srcDirs += ['src/newarch']
+            } else {
+                java.srcDirs += ['src/oldarch']
+            }
+        }
     }
 }
 
@@ -54,6 +78,6 @@ repositories {
 }
 
 dependencies {
-    //noinspection GradleDynamicVersion
-    implementation "com.facebook.react:react-native:+"  // From node_modules
+    implementation "com.facebook.react:react-native"
+    implementation "com.facebook.react:react-android"
 }

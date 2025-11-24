@@ -3,6 +3,7 @@ import { FetchHttpClient } from '../transport/http';
 import { ExposureTrackingProvider } from './exposure';
 import { Logger, LogLevel } from './logger';
 import { Source } from './source';
+import { Storage } from './storage';
 import { HttpClient } from './transport';
 import { ExperimentUserProvider } from './user';
 import { Variant, Variants } from './variant';
@@ -146,6 +147,12 @@ export interface ExperimentConfig {
    * (Advanced) Use your own http client.
    */
   httpClient?: HttpClient;
+
+  /**
+   * (Advanced) Use your own storage implementation.
+   * If not provided, the client will use the default local storage implementation, which is AsyncStorage.
+   */
+  storage?: Storage;
 }
 
 /**
@@ -198,4 +205,5 @@ export const Defaults: ExperimentConfig = {
   userProvider: null,
   exposureTrackingProvider: null,
   httpClient: FetchHttpClient,
+  storage: null,
 };

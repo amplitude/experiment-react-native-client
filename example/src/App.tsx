@@ -1,4 +1,3 @@
-import { init, track } from '@amplitude/analytics-react-native';
 import {
   Experiment,
   Variant,
@@ -6,6 +5,7 @@ import {
 } from '@amplitude/experiment-react-native-client';
 import * as React from 'react';
 import { StyleSheet, View, Text } from 'react-native';
+import { init, track } from '@amplitude/analytics-react-native';
 
 export default function App() {
   const [variant, setVariant] = React.useState<Variant | undefined>();
