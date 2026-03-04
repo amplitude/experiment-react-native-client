@@ -25,18 +25,18 @@
     "@react-native-async-storage/async-storage" "^1.17.11"
     tslib "^2.4.1"
 
-"@amplitude/experiment-core@^0.7.2":
-  version "0.7.2"
-  resolved "https://registry.yarnpkg.com/@amplitude/experiment-core/-/experiment-core-0.7.2.tgz#f94219d68d86322e8d580c8fbe0672dcd29f86bb"
-  integrity sha512-Wc2NWvgQ+bLJLeF0A9wBSPIaw0XuqqgkPKsoNFQrmS7r5Djd56um75In05tqmVntPJZRvGKU46pAp8o5tdf4mA==
+"@amplitude/experiment-core@^0.11.0":
+  version "0.11.1"
+  resolved "https://registry.yarnpkg.com/@amplitude/experiment-core/-/experiment-core-0.11.1.tgz#31eb485dc40b65f4cc2f15adab9b62f0df622065"
+  integrity sha512-fHVJazCwwgjUcj49N+yFSLMSroyY0eHImrsmd1ipIjIT1Cez8mh+TvwJQ0LGSdyYvL2NAZM2J5vpXrR1nHgdzg==
   dependencies:
     js-base64 "^3.7.5"
 
 "@amplitude/experiment-react-native-client@../":
-  version "1.5.3"
+  version "1.8.0"
   dependencies:
     "@amplitude/analytics-connector" "^1.4.7"
-    "@amplitude/experiment-core" "^0.7.2"
+    "@amplitude/experiment-core" "^0.11.0"
     "@react-native-async-storage/async-storage" "^2.0.0"
     unfetch "^4.2.0"
 
