@@ -48,7 +48,7 @@
   },
   "dependencies": {
     "@amplitude/analytics-connector": "^1.4.7",
-    "@amplitude/experiment-core": "^0.11.0",
+    "@amplitude/experiment-core": "^0.13.1",
     "@react-native-async-storage/async-storage": "^2.0.0",
     "unfetch": "^4.2.0"
   },
@@ -108,7 +108,9 @@
     },
     "npm": {
       "publish": true,
-      "publishArgs": ["--provenance"]
+      "publishArgs": [
+        "--provenance"
+      ]
     },
     "github": {
       "release": true
