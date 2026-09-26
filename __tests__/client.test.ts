@@ -2,11 +2,10 @@ import { AnalyticsConnector } from '@amplitude/analytics-connector';
 import { FetchError } from '@amplitude/experiment-core';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
-import { Exposure } from '../lib/typescript';
 import { ExperimentClient } from '../src/experimentClient';
 import { ConnectorExposureTrackingProvider } from '../src/integration/connector';
 import { FetchOptions } from '../src/types/client';
-import { ExposureTrackingProvider } from '../src/types/exposure';
+import { Exposure, ExposureTrackingProvider } from '../src/types/exposure';
 import { Source } from '../src/types/source';
 import { Storage } from '../src/types/storage';
 import { HttpClient, SimpleResponse } from '../src/types/transport';
