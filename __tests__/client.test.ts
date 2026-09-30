@@ -383,6 +383,27 @@ test('ExperimentClient.fetch with not exist flagKeys in fetch options', async ()
   expect(variant).toEqual({});
 });
 
+test('ExperimentClient.fetch with flagKeys in fetch options, removes a requested flag missing from the response', async () => {
+  const onVariant = { key: 'on', value: 'on' };
+  const responses = [
+    JSON.stringify({ 'flag-a': onVariant, 'flag-b': onVariant }),
+    JSON.stringify({ 'flag-b': onVariant }),
+  ];
+  const client = new ExperimentClient(API_KEY, {
+    httpClient: {
+      request: async () => ({ status: 200, body: responses.shift() ?? '{}' }),
+    },
+  });
+  const option: FetchOptions = { flagKeys: ['flag-a', 'flag-b'] };
+
+  await client.fetch(testUser, option);
+  expect(client.variant('flag-a')).toEqual(onVariant);
+
+  await client.fetch(testUser, option);
+  expect(client.variant('flag-a')).toEqual({});
+  expect(client.all()).toEqual({ 'flag-b': onVariant });
+});
+
 test('ExperimentClient.variant experiment key passed from variant to exposure', async () => {
   let didTrack = false;
   const client = new ExperimentClient(API_KEY, {
