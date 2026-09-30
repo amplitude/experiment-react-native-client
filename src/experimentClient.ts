@@ -732,7 +732,7 @@ export class ExperimentClient implements Client {
       this.variants.put(key, variants[key]);
     }
 
-    for (const key in failedFlagKeys) {
+    for (const key of failedFlagKeys) {
       this.variants.remove(key);
     }
     await this.variants.store();
